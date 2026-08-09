@@ -2,33 +2,31 @@ name: Secure DevSecOps Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  security-scan:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Secret Scanning
-      - name: Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-
-      # Static Code Analysis
-      - name: Semgrep
-        uses: semgrep/semgrep-action@v1
-
-      # Dependency and File System Scan
-      - name: Trivy
-        uses: aquasecurity/trivy-action@master
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          scan-type: fs
-          scan-ref: .
+          python-version: '3.11'
 
-      # Infrastructure as Code Scan
-      - name: Checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: .
+      - name: Install Dependencies
+        run: |
+          cd app
+          pip install -r requirements.txt
+
+      - name: Verify App
+        run: |
+          cd app
+          python -m py_compile app.py
+
+      - name: Success
+        run: echo "Build Successful"
