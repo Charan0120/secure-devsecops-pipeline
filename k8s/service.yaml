@@ -3,6 +3,7 @@ kind: Service
 
 metadata:
   name: secure-app-service
+  namespace: secure-devsecops
 
 spec:
   selector:
@@ -13,4 +14,4 @@ spec:
       port: 80
       targetPort: 5000
 
-  type: LoadBalancer
+  type: ClusterIP

@@ -3,6 +3,7 @@ kind: Deployment
 
 metadata:
   name: secure-app
+  namespace: secure-devsecops
 
 spec:
   replicas: 1
@@ -17,39 +18,48 @@ spec:
         app: secure-app
 
     spec:
+      automountServiceAccountToken: false
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
+
       containers:
-      - name: secure-app
-        image: secure-app:v1.0.0
+        - name: secure-app
+          image: secure-app:v1.0.0
+          imagePullPolicy: Always
 
-        ports:
-        - containerPort: 5000
+          ports:
+            - containerPort: 5000
 
-        resources:
-          requests:
-            cpu: "250m"
-            memory: "256Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
 
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities:
-            drop:
-              - ALL
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
 
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 5
-          periodSeconds: 10
+            capabilities:
+              drop:
+                - ALL
 
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 15
-          periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
