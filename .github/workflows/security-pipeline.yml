@@ -42,3 +42,7 @@ jobs:
         with:
           directory: .
           skip_check: CKV_K8S_43
+
+      - name: Calculate Security Risk
+        run: |
+          python security/risk_score.py
