@@ -29,3 +29,8 @@ jobs:
         with:
           scan-type: fs
           scan-ref: .
+
+      - name: Checkov Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
