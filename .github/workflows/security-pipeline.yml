@@ -15,3 +15,5 @@ jobs:
 
       - name: Gitleaks Scan
         uses: gitleaks/gitleaks-action@v2
+      - name: Semgrep Scan
+        uses: semgrep/semgrep-action@v1
