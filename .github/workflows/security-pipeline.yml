@@ -15,9 +15,15 @@ jobs:
 
     steps:
 
+      # --------------------
+      # Checkout Repository
+      # --------------------
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # --------------------
+      # Setup Python
+      # --------------------
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -25,13 +31,13 @@ jobs:
           cache: "pip"
 
       # --------------------
-      # Gitleaks
+      # Gitleaks Secret Scan
       # --------------------
       - name: Gitleaks Scan
         uses: gitleaks/gitleaks-action@v2
 
       # --------------------
-      # Semgrep
+      # Semgrep SAST Scan
       # --------------------
       - name: Install Semgrep
         run: |
@@ -45,7 +51,7 @@ jobs:
           --output semgrep-results.json
 
       # --------------------
-      # Trivy
+      # Trivy Vulnerability Scan
       # --------------------
       - name: Run Trivy
         uses: aquasecurity/trivy-action@master
@@ -56,12 +62,8 @@ jobs:
           output: trivy-results.json
 
       # --------------------
-      # Checkov
+      # Checkov IaC Scan
       # --------------------
-      - name: Install Checkov
-        run: |
-          pip install checkov
-
       - name: Checkov Scan
         uses: bridgecrewio/checkov-action@master
         with:
@@ -70,49 +72,48 @@ jobs:
           soft_fail: true
           skip_check: CKV_K8S_43
 
-      - name: Debug Checkov Output
+      # --------------------
+      # Debug Generated Files
+      # --------------------
+      - name: Debug Files
         if: always()
         run: |
-          echo "=== Current Directory ==="
-          pwd
-
           echo "=== JSON Files ==="
           find . -name "*.json"
 
           echo "=== SARIF Files ==="
           find . -name "*.sarif"
 
-          echo "=== All Files ==="
-          ls -la
-
       # --------------------
-      # Risk Score
+      # Risk Score Engine
       # --------------------
       - name: Calculate Security Risk Score
         run: |
           python security/risk_score.py
 
       # --------------------
-      # Upload Reports
+      # Create Reports Folder
       # --------------------
-      - name: Upload Reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-reports
-          path: |
-            semgrep-results.json
-            trivy-results.json
-            checkov-results.json
-
-
       - name: Create Reports Directory
+        if: always()
         run: |
           mkdir -p reports
-          cp semgrep-results.json reports/
-          cp trivy-results.json reports/
-          cp checkov-results.json reports/
 
+          if [ -f semgrep-results.json ]; then
+            cp semgrep-results.json reports/
+          fi
+
+          if [ -f trivy-results.json ]; then
+            cp trivy-results.json reports/
+          fi
+
+          if [ -f results.sarif ]; then
+            cp results.sarif reports/
+          fi
+
+      # --------------------
+      # Upload Reports
+      # --------------------
       - name: Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
