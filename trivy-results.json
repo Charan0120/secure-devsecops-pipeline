@@ -1,0 +1,17 @@
+{
+  "Results": [
+    {
+      "Vulnerabilities": [
+        {
+          "Severity": "CRITICAL"
+        },
+        {
+          "Severity": "HIGH"
+        },
+        {
+          "Severity": "MEDIUM"
+        }
+      ]
+    }
+  ]
+}

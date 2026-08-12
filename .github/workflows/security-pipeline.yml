@@ -2,47 +2,80 @@ name: Secure DevSecOps Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 permissions:
   contents: read
   security-events: write
-
 
 jobs:
   security:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
 
-      - name: Gitleaks Scan
-        uses: gitleaks/gitleaks-action@v2
+      # Checkout Repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
+      # Python Setup
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
+      # Gitleaks Secret Scan
+      - name: Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+
+      # Semgrep SAST Scan
       - name: Install Semgrep
-        run: pip install semgrep
+        run: |
+          pip install semgrep
 
       - name: Run Semgrep
-        run: semgrep scan --config=auto .
+        run: |
+          semgrep scan --config=auto . \
+          --json \
+          --output semgrep-results.json
 
+      # Trivy Vulnerability Scan
       - name: Run Trivy
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
           scan-ref: .
+          format: json
+          output: trivy-results.json
 
+      # Checkov IaC Scan
       - name: Checkov Scan
         uses: bridgecrewio/checkov-action@master
         with:
           directory: .
+          output_format: json
+          output_file_path: checkov-results.json
           skip_check: CKV_K8S_43
 
-      - name: Calculate Security Risk
+      # Run Risk Score Engine
+      - name: Calculate Security Risk Score
         run: |
           python security/risk_score.py
+
+      - name: Verify Reports
+        if: always()
+        run: |
+          ls -la
+
+      # Upload Reports
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+        name: security-reports
+        path: |
+          semgrep-results.json
+          trivy-results.json
+          checkov-results.json
