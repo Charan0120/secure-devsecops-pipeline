@@ -1,15 +1,41 @@
 {
+  "SchemaVersion": 2,
+  "Trivy": {
+    "Version": "0.73.0"
+  },
+  "ReportID": "019ff722-313c-73dc-b1c9-69de83747dce",
+  "CreatedAt": "2026-08-12T18:00:41.020254214Z",
+  "ArtifactID": "sha256:39add127dbb511fb1d6c066d98a084e34760ab2d63919caea88514a21dbc17e8",
+  "ArtifactName": ".",
+  "ArtifactType": "repository",
+  "Metadata": {
+    "RepoURL": "https://github.com/Charan0120/secure-devsecops-pipeline",
+    "Branch": "main",
+    "Commit": "90d0a7ef0353c04a9cf65de81bb330a76d645a55",
+    "CommitMsg": "Allow Checkov findings for risk scoring",
+    "Author": "Charan0120 \u003cbalusacharan@gmail.com\u003e",
+    "Committer": "Charan0120 \u003cbalusacharan@gmail.com\u003e"
+  },
   "Results": [
     {
-      "Vulnerabilities": [
+      "Target": "app/requirements.txt",
+      "Class": "lang-pkgs",
+      "Type": "pip",
+      "Packages": [
         {
-          "Severity": "CRITICAL"
-        },
-        {
-          "Severity": "HIGH"
-        },
-        {
-          "Severity": "MEDIUM"
+          "Name": "Flask",
+          "Identifier": {
+            "PURL": "pkg:pypi/flask@3.1.3",
+            "UID": "94aab83fb142e9c0"
+          },
+          "Version": "3.1.3",
+          "Locations": [
+            {
+              "StartLine": 1,
+              "EndLine": 1
+            }
+          ],
+          "AnalyzedBy": "pip"
         }
       ]
     }

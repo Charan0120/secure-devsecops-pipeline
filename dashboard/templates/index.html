@@ -3,24 +3,39 @@
 <head>
     <title>Secure DevSecOps Dashboard</title>
 </head>
+
 <body>
 
 <h1>Secure DevSecOps Dashboard</h1>
 
-<h2>Security Summary</h2>
-
-<p>Critical: {{ data.critical }}</p>
-<p>High: {{ data.high }}</p>
-<p>Medium: {{ data.medium }}</p>
-<p>Low: {{ data.low }}</p>
+<hr>
 
 <h2>Risk Score</h2>
-
-<p>{{ data.score }}</p>
+<h1>{{ data.score }}</h1>
 
 <h2>Status</h2>
+<h1>{{ data.status }}</h1>
 
-<p>{{ data.status }}</p>
+<hr>
+
+<h2>Trivy Vulnerabilities</h2>
+
+<p>Critical : {{ data.critical }}</p>
+<p>High : {{ data.high }}</p>
+<p>Medium : {{ data.medium }}</p>
+<p>Low : {{ data.low }}</p>
+
+<hr>
+
+<h2>Semgrep</h2>
+
+<p>Findings : {{ data.semgrep }}</p>
+
+<hr>
+
+<h2>Checkov</h2>
+
+<p>Failed Checks : {{ data.checkov }}</p>
 
 </body>
 </html>

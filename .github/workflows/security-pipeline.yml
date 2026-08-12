@@ -70,6 +70,21 @@ jobs:
           soft_fail: true
           skip_check: CKV_K8S_43
 
+      - name: Debug Checkov Output
+        if: always()
+        run: |
+          echo "=== Current Directory ==="
+          pwd
+
+          echo "=== JSON Files ==="
+          find . -name "*.json"
+
+          echo "=== SARIF Files ==="
+          find . -name "*.sarif"
+
+          echo "=== All Files ==="
+          ls -la
+
       # --------------------
       # Risk Score
       # --------------------
@@ -89,3 +104,18 @@ jobs:
             semgrep-results.json
             trivy-results.json
             checkov-results.json
+
+
+      - name: Create Reports Directory
+        run: |
+          mkdir -p reports
+          cp semgrep-results.json reports/
+          cp trivy-results.json reports/
+          cp checkov-results.json reports/
+
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: reports/
