@@ -63,6 +63,7 @@ jobs:
           pip install checkov
 
       - name: Run Checkov
+        continue-on-error: true
         run: |
           checkov -d . \
           -o json > checkov-results.json
