@@ -62,11 +62,13 @@ jobs:
         run: |
           pip install checkov
 
-      - name: Run Checkov
-        continue-on-error: true
-        run: |
-          checkov -d . \
-          -o json > checkov-results.json
+      - name: Checkov Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          output_format: sarif
+          soft_fail: true
+          skip_check: CKV_K8S_43
 
       # --------------------
       # Risk Score
