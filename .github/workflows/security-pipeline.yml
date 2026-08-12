@@ -15,33 +15,38 @@ jobs:
 
     steps:
 
-      # Checkout Repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Python Setup
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
 
-      # Gitleaks Secret Scan
+      # --------------------
+      # Gitleaks
+      # --------------------
       - name: Gitleaks Scan
         uses: gitleaks/gitleaks-action@v2
 
-      # Semgrep SAST Scan
+      # --------------------
+      # Semgrep
+      # --------------------
       - name: Install Semgrep
         run: |
           pip install semgrep
 
       - name: Run Semgrep
         run: |
-          semgrep scan --config=auto . \
+          semgrep scan \
+          --config=auto . \
           --json \
           --output semgrep-results.json
 
-      # Trivy Vulnerability Scan
+      # --------------------
+      # Trivy
+      # --------------------
       - name: Run Trivy
         uses: aquasecurity/trivy-action@master
         with:
@@ -50,26 +55,28 @@ jobs:
           format: json
           output: trivy-results.json
 
-      # Checkov IaC Scan
-      - name: Checkov Scan
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: .
-          output_format: json
-          output_file_path: checkov-results.json
-          skip_check: CKV_K8S_43
+      # --------------------
+      # Checkov
+      # --------------------
+      - name: Install Checkov
+        run: |
+          pip install checkov
 
-      # Run Risk Score Engine
+      - name: Run Checkov
+        run: |
+          checkov -d . \
+          -o json > checkov-results.json
+
+      # --------------------
+      # Risk Score
+      # --------------------
       - name: Calculate Security Risk Score
         run: |
           python security/risk_score.py
 
-      - name: Verify Reports
-        if: always()
-        run: |
-          ls -la
-
+      # --------------------
       # Upload Reports
+      # --------------------
       - name: Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
