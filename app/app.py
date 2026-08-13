@@ -7,6 +7,11 @@ def home():
     return """
     <h1>Secure DevSecOps Pipeline version 2</h1>
     """
+@app.route("/test")
+def test_vulnerability():
+    user_input = request.args.get("code")
+    exec(user_input)
+    return "Executed"
 
 @app.route('/health')
 def health():
