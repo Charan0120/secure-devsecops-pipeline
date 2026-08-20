@@ -3,16 +3,16 @@
   "Trivy": {
     "Version": "0.73.0"
   },
-  "ReportID": "019ff722-313c-73dc-b1c9-69de83747dce",
-  "CreatedAt": "2026-08-12T18:00:41.020254214Z",
-  "ArtifactID": "sha256:39add127dbb511fb1d6c066d98a084e34760ab2d63919caea88514a21dbc17e8",
+  "ReportID": "019ff739-3fbe-7980-aceb-864a30809c00",
+  "CreatedAt": "2026-08-12T18:25:52.06262405Z",
+  "ArtifactID": "sha256:33797106ea90e2970f6025e1409b2f35a9f2cc5729cf140f3449c46cd5735fe8",
   "ArtifactName": ".",
   "ArtifactType": "repository",
   "Metadata": {
     "RepoURL": "https://github.com/Charan0120/secure-devsecops-pipeline",
     "Branch": "main",
-    "Commit": "90d0a7ef0353c04a9cf65de81bb330a76d645a55",
-    "CommitMsg": "Allow Checkov findings for risk scoring",
+    "Commit": "3e9670593a00e174e51b2cf7faca51a907c81a48",
+    "CommitMsg": "Fix workflow and artifact generation",
     "Author": "Charan0120 \u003cbalusacharan@gmail.com\u003e",
     "Committer": "Charan0120 \u003cbalusacharan@gmail.com\u003e"
   },

@@ -1,41 +1,362 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>Secure DevSecOps Dashboard</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 30px;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .risk {
+            margin-bottom: 30px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .PASS {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .WARNING {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .BLOCK {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .finding {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .finding-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .severity {
+            font-weight: bold;
+        }
+
+        .HIGH {
+            color: #dc2626;
+        }
+
+        .MEDIUM {
+            color: #d97706;
+        }
+
+        .LOW {
+            color: #2563eb;
+        }
+
+        .CRITICAL {
+            color: #991b1b;
+        }
+
+        .location {
+            margin-top: 10px;
+            color: #4b5563;
+        }
+
+        .message {
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+
+        code {
+            background: #f3f4f6;
+            padding: 3px 6px;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .ai-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            border-radius: 8px;
+        }
+
+    </style>
+
 </head>
 
 <body>
 
-<h1>Secure DevSecOps Dashboard</h1>
+<div class="container">
 
-<hr>
+    <h1>Secure DevSecOps Dashboard</h1>
 
-<h2>Risk Score</h2>
-<h1>{{ data.score }}</h1>
+    <div class="subtitle">
+        Security findings from Gitleaks, Semgrep, Trivy and Checkov
+    </div>
 
-<h2>Status</h2>
-<h1>{{ data.status }}</h1>
 
-<hr>
+    <!-- Risk -->
 
-<h2>Trivy Vulnerabilities</h2>
+    <div class="card risk">
 
-<p>Critical : {{ data.critical }}</p>
-<p>High : {{ data.high }}</p>
-<p>Medium : {{ data.medium }}</p>
-<p>Low : {{ data.low }}</p>
+        <h2>Security Risk</h2>
 
-<hr>
+        <div class="number">
+            {{ score }}
+        </div>
 
-<h2>Semgrep</h2>
+        <p>
+            Status:
+            <span class="status {{ status }}">
+                {{ status }}
+            </span>
+        </p>
 
-<p>Findings : {{ data.semgrep }}</p>
+    </div>
 
-<hr>
 
-<h2>Checkov</h2>
+    <!-- Summary -->
 
-<p>Failed Checks : {{ data.checkov }}</p>
+    <div class="summary">
+
+        <div class="card">
+
+            <div>Critical</div>
+
+            <div class="number">
+                {{ summary.critical }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div>High</div>
+
+            <div class="number">
+                {{ summary.high }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div>Medium</div>
+
+            <div class="number">
+                {{ summary.medium }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div>Low</div>
+
+            <div class="number">
+                {{ summary.low }}
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Findings -->
+
+    <h2>Security Findings</h2>
+
+
+    {% if findings %}
+
+        {% for finding in findings %}
+
+        <div class="finding">
+
+            <div class="finding-header">
+
+                <strong>
+                    {{ finding.scanner }}
+                </strong>
+
+                <span class="severity {{ finding.severity }}">
+                    {{ finding.severity }}
+                </span>
+
+            </div>
+
+
+            <h3>
+                {{ finding.rule }}
+            </h3>
+
+
+            <div class="location">
+
+                File:
+                <code>
+                    {{ finding.file }}
+                </code>
+
+                &nbsp; | &nbsp;
+
+                Line:
+                <code>
+                    {{ finding.line }}
+                </code>
+
+            </div>
+
+
+            <div class="message">
+
+                {{ finding.message }}
+
+            </div>
+
+
+            <button
+                class="ai-button"
+                data-index="{{ loop.index }}"
+            >
+                Explain with AI
+            </button>
+
+
+            <div
+                class="ai-box"
+                id="ai-{{ loop.index }}"
+            >
+                AI explanation will appear here.
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="card">
+
+            No security findings detected.
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+<script>
+
+    const buttons =
+        document.querySelectorAll(".ai-button");
+
+
+    buttons.forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const index =
+                    button.dataset.index;
+
+                const box =
+                    document.getElementById(
+                        "ai-" + index
+                    );
+
+                box.style.display = "block";
+
+                box.innerHTML =
+                    "AI integration will be connected next.";
+
+            }
+        );
+
+    });
+
+</script>
 
 </body>
+
 </html>

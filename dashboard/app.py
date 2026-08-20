@@ -1,96 +1,119 @@
-import json
+import sys
 import os
+
 from flask import Flask, render_template
+
+# Allow Python to find the security folder
+PROJECT_ROOT = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__),
+        ".."
+    )
+)
+
+sys.path.insert(0, PROJECT_ROOT)
+
+from security.vulnerability_parser import parse_all
+
 
 app = Flask(__name__)
 
-def load_results():
 
-    data = {
+def calculate_risk(findings):
+
+    weights = {
+        "CRITICAL": 10,
+        "HIGH": 7,
+        "MEDIUM": 4,
+        "LOW": 1,
+        "INFO": 0
+    }
+
+    score = 0
+
+    for finding in findings:
+
+        severity = finding.get(
+            "severity",
+            "INFO"
+        ).upper()
+
+        score += weights.get(
+            severity,
+            0
+        )
+
+    return score
+
+
+def get_status(score):
+
+    if score >= 50:
+        return "BLOCK"
+
+    elif score >= 20:
+        return "WARNING"
+
+    return "PASS"
+
+
+def get_summary(findings):
+
+    summary = {
         "critical": 0,
         "high": 0,
         "medium": 0,
-        "low": 0,
-        "semgrep": 0,
-        "checkov": 0,
-        "score": 0,
-        "status": "PASS"
+        "low": 0
     }
 
-    # --------------------
-    # Trivy
-    # --------------------
-    if os.path.exists("../trivy-results.json"):
+    for finding in findings:
 
-        with open("../trivy-results.json", "r") as f:
-            trivy = json.load(f)
+        severity = finding.get(
+            "severity",
+            "INFO"
+        ).lower()
 
-        for result in trivy.get("Results", []):
+        if severity in summary:
 
-            for vuln in result.get("Vulnerabilities", []):
+            summary[severity] += 1
 
-                sev = vuln.get("Severity", "").upper()
-
-                if sev == "CRITICAL":
-                    data["critical"] += 1
-
-                elif sev == "HIGH":
-                    data["high"] += 1
-
-                elif sev == "MEDIUM":
-                    data["medium"] += 1
-
-                elif sev == "LOW":
-                    data["low"] += 1
-
-    # --------------------
-    # Semgrep
-    # --------------------
-    if os.path.exists("../semgrep-results.json"):
-
-        with open("../semgrep-results.json", "r") as f:
-            semgrep = json.load(f)
-
-        data["semgrep"] = len(
-            semgrep.get("results", [])
-        )
-
-    # --------------------
-    # Checkov
-    # --------------------
-    if os.path.exists("../checkov-results.json"):
-
-        with open("../checkov-results.json", "r") as f:
-            checkov = json.load(f)
-
-        print(checkov)
-    
-
-    data["score"] = (
-        data["critical"] * 10 +
-        data["high"] * 7 +
-        data["medium"] * 4 +
-        data["low"] +
-        data["semgrep"] * 2 +
-        data["checkov"] * 3
-    )
-
-    if data["score"] > 50:
-        data["status"] = "BLOCK"
-
-    elif data["score"] > 20:
-        data["status"] = "WARNING"
-
-    return data
+    return summary
 
 
 @app.route("/")
 def home():
+
+    # Read all scanner reports
+    findings = parse_all()
+
+    # Calculate risk
+    score = calculate_risk(
+        findings
+    )
+
+    # Determine status
+    status = get_status(
+        score
+    )
+
+    # Calculate severity counts
+    summary = get_summary(
+        findings
+    )
+
     return render_template(
         "index.html",
-        data=load_results()
+        findings=findings,
+        score=score,
+        status=status,
+        summary=summary
     )
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=True
+    )
