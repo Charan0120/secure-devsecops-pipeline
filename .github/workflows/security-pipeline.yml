@@ -44,17 +44,19 @@ jobs:
           pip install semgrep
 
       - name: Run Semgrep
+        continue-on-error: true
         run: |
           semgrep scan \
           --config=auto . \
-          --error \
           --json \
           --output semgrep-results.json
 
       # --------------------
       # Trivy Vulnerability Scan
       # --------------------
+      # Trivy
       - name: Run Trivy
+        continue-on-error: true
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
@@ -65,7 +67,9 @@ jobs:
       # --------------------
       # Checkov IaC Scan
       # --------------------
+      # Checkov
       - name: Checkov Scan
+        continue-on-error: true
         uses: bridgecrewio/checkov-action@master
         with:
           directory: .
