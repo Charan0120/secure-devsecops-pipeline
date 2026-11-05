@@ -1,5 +1,17 @@
-import re
 import os
+import re
+import urllib.parse
+
+# Werkzeug 3.x / Flask backward-compatibility shim
+try:
+    import werkzeug.urls
+    if not hasattr(werkzeug.urls, "url_quote"):
+        werkzeug.urls.url_quote = urllib.parse.quote
+    if not hasattr(werkzeug.urls, "url_unquote"):
+        werkzeug.urls.url_unquote = urllib.parse.unquote
+except (ImportError, AttributeError):
+    pass
+
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)

@@ -84,16 +84,17 @@ jobs:
       - name: Start AI Chatbot Service in Test Environment
         run: |
           pip install -r app/requirements.txt
-          python app/app.py &
+          python app/app.py > /tmp/chatbot.log 2>&1 &
           echo "Waiting for Chatbot service on port 5000..."
-          for i in {1..20}; do
+          for i in {1..25}; do
             if curl -s http://localhost:5000/health | grep -q "healthy"; then
               echo "AI Chatbot is online and ready for security testing!"
               exit 0
             fi
             sleep 1
           done
-          echo "Error: Chatbot failed to start"
+          echo "Error: Chatbot failed to start. Service logs:"
+          cat /tmp/chatbot.log || true
           exit 1
 
       - name: Run AI Adversarial Prompt Injection & Data Leakage Scanner
