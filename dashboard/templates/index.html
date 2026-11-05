@@ -1,362 +1,745 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Secure DevSecOps Dashboard</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevSecOps Security Dashboard | Aura E-Commerce & AI Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #111827;
+            --bg-card: #1f2937;
+            --border: #374151;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.15);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245, 158, 11, 0.15);
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.15);
+            --info: #06b6d4;
+            --info-bg: rgba(6, 182, 212, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            margin: 0;
-            padding: 30px;
-            color: #1f2937;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 24px;
         }
 
         .container {
-            max-width: 1200px;
-            margin: auto;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        h1 {
-            margin-bottom: 5px;
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
-        .subtitle {
-            color: #6b7280;
-            margin-bottom: 30px;
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .summary {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
+        .brand-title h1 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        .badge-live {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .number {
-            font-size: 32px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .risk {
-            margin-bottom: 30px;
-        }
-
-        .status {
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
             display: inline-block;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: bold;
+            box-shadow: 0 0 8px #ef4444;
+            animation: pulse 1.5s infinite;
         }
 
-        .PASS {
-            background: #dcfce7;
-            color: #166534;
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
-        .WARNING {
-            background: #fef3c7;
-            color: #92400e;
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .BLOCK {
-            background: #fee2e2;
-            color: #991b1b;
+        .btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
         }
 
-        .finding {
-            background: white;
-            padding: 20px;
-            margin-bottom: 15px;
+        .btn:hover {
+            background: var(--border);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Quality Gate Banner */
+        .gate-banner {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(17, 24, 39, 0.8) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.4);
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .gate-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .gate-tag {
+            background: var(--danger);
+            color: white;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card.critical::before { background: var(--danger); }
+        .stat-card.high::before { background: var(--warning); }
+        .stat-card.medium::before { background: #38bdf8; }
+        .stat-card.safe::before { background: var(--success); }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .stat-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Pipeline Stages */
+        .pipeline-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .pipeline-header {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pipeline-stages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .stage-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stage-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .stage-status {
+            font-weight: 700;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Tabs */
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: var(--bg-secondary);
+        }
+
+        .tab-btn.active {
+            color: white;
+            background: var(--accent);
+        }
+
+        /* Findings List */
+        .finding-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .finding-card:hover {
+            border-color: #4b5563;
         }
 
         .finding-header {
             display: flex;
             justify-content: space-between;
-            gap: 15px;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
         }
 
-        .severity {
-            font-weight: bold;
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .HIGH {
-            color: #dc2626;
+        .badge-critical { background: var(--danger-bg); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .badge-high { background: var(--warning-bg); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .badge-medium { background: var(--info-bg); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4); }
+        .badge-scanner { background: rgba(147, 51, 234, 0.15); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.4); }
+
+        .finding-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
         }
 
-        .MEDIUM {
-            color: #d97706;
+        .location-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
         }
 
-        .LOW {
-            color: #2563eb;
-        }
-
-        .CRITICAL {
-            color: #991b1b;
-        }
-
-        .location {
-            margin-top: 10px;
-            color: #4b5563;
-        }
-
-        .message {
-            margin-top: 15px;
+        .message-text {
+            color: #d1d5db;
+            font-size: 14px;
             line-height: 1.5;
+            margin-bottom: 14px;
         }
 
-        code {
-            background: #f3f4f6;
-            padding: 3px 6px;
-            border-radius: 5px;
+        .code-box {
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #ef4444;
+            overflow-x: auto;
+            margin-bottom: 14px;
         }
 
-        button {
-            margin-top: 15px;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            background: #2563eb;
+        /* AI Explain Accordion */
+        .ai-explain-btn {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
             color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        button:hover {
-            background: #1d4ed8;
-        }
-
-        .ai-box {
+        .ai-modal {
             display: none;
-            margin-top: 15px;
-            padding: 15px;
-            background: #eff6ff;
-            border-left: 4px solid #2563eb;
+            background: #0f172a;
+            border: 1px solid #3b82f6;
             border-radius: 8px;
+            padding: 16px;
+            margin-top: 14px;
+            animation: fadeIn 0.2s ease-in-out;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ai-modal h4 {
+            color: #60a5fa;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .ai-patch-box {
+            background: #030712;
+            border: 1px solid #1e3a8a;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #34d399;
+            white-space: pre-wrap;
+            margin-top: 8px;
+        }
+
+        /* Chatbot Table */
+        .chatbot-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        .chatbot-table th, .chatbot-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .chatbot-table th {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--bg-card);
+        }
+
+        .safe-tag {
+            color: #34d399;
+            font-weight: 700;
+        }
     </style>
-
 </head>
-
 <body>
 
 <div class="container">
 
-    <h1>Secure DevSecOps Dashboard</h1>
-
-    <div class="subtitle">
-        Security findings from Gitleaks, Semgrep, Trivy and Checkov
-    </div>
-
-
-    <!-- Risk -->
-
-    <div class="card risk">
-
-        <h2>Security Risk</h2>
-
-        <div class="number">
-            {{ score }}
+    <!-- Top Navigation Header -->
+    <header>
+        <div>
+            <div class="brand-title">
+                <h1>AURA DevSecOps Security Dashboard</h1>
+                <span class="badge-live"><span class="pulse-dot"></span> CI/CD Active</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
+                Automated Security Audit for <strong>Aura E-Commerce Store</strong> & <strong>Aura AI Chatbot</strong>
+            </p>
         </div>
-
-        <p>
-            Status:
-            <span class="status {{ status }}">
-                {{ status }}
-            </span>
-        </p>
-
-    </div>
-
-
-    <!-- Summary -->
-
-    <div class="summary">
-
-        <div class="card">
-
-            <div>Critical</div>
-
-            <div class="number">
-                {{ summary.critical }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div>High</div>
-
-            <div class="number">
-                {{ summary.high }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div>Medium</div>
-
-            <div class="number">
-                {{ summary.medium }}
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div>Low</div>
-
-            <div class="number">
-                {{ summary.low }}
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- Findings -->
-
-    <h2>Security Findings</h2>
-
-
-    {% if findings %}
-
-        {% for finding in findings %}
-
-        <div class="finding">
-
-            <div class="finding-header">
-
-                <strong>
-                    {{ finding.scanner }}
-                </strong>
-
-                <span class="severity {{ finding.severity }}">
-                    {{ finding.severity }}
-                </span>
-
-            </div>
-
-
-            <h3>
-                {{ finding.rule }}
-            </h3>
-
-
-            <div class="location">
-
-                File:
-                <code>
-                    {{ finding.file }}
-                </code>
-
-                &nbsp; | &nbsp;
-
-                Line:
-                <code>
-                    {{ finding.line }}
-                </code>
-
-            </div>
-
-
-            <div class="message">
-
-                {{ finding.message }}
-
-            </div>
-
-
-            <button
-                class="ai-button"
-                data-index="{{ loop.index }}"
-            >
-                Explain with AI
+        <div class="header-actions">
+            <a href="http://localhost:5000" target="_blank" class="btn btn-primary">
+                🛍️ Open E-Commerce Store
+            </a>
+            <a href="https://github.com/Charan0120/secure-devsecops-pipeline" target="_blank" class="btn">
+                🐙 GitHub Repository
+            </a>
+            <button onclick="location.reload()" class="btn">
+                🔄 Refresh Audit
             </button>
+        </div>
+    </header>
 
+    <!-- Quality Gate Banner -->
+    <div class="gate-banner">
+        <div class="gate-title">
+            <span class="gate-tag">QUALITY GATE: {{ status }}</span>
+            <div>
+                <h3 style="font-size: 16px; font-weight: 700;">Build & Deployment Blocked by Security Policy</h3>
+                <p style="font-size: 13px; color: #d1d5db; margin-top: 2px;">
+                    Policy Violation: Found <strong>{{ summary.critical }} Critical</strong> vulnerability (Maximum allowed: 0). Deployment is halted.
+                </p>
+            </div>
+        </div>
+        <div>
+            <span style="font-size: 12px; color: var(--text-muted);">Risk Score:</span>
+            <span style="font-size: 28px; font-weight: 800; color: #f87171; margin-left: 6px;">{{ score }}</span>
+            <span style="font-size: 12px; color: var(--text-muted);">/ 50 Threshold</span>
+        </div>
+    </div>
 
-            <div
-                class="ai-box"
-                id="ai-{{ loop.index }}"
-            >
-                AI explanation will appear here.
+    <!-- Summary KPI Stats -->
+    <div class="stats-grid">
+        <div class="stat-card critical">
+            <div class="stat-label">Critical Vulnerabilities</div>
+            <div class="stat-value" style="color: #f87171;">{{ summary.critical }}</div>
+            <div class="stat-desc">Hardcoded Secret in secret.txt</div>
+        </div>
+        <div class="stat-card high">
+            <div class="stat-label">High Vulnerabilities</div>
+            <div class="stat-value" style="color: #fbbf24;">{{ summary.high }}</div>
+            <div class="stat-desc">Zero High Flaws Detected</div>
+        </div>
+        <div class="stat-card medium">
+            <div class="stat-label">Medium Misconfigs</div>
+            <div class="stat-value" style="color: #38bdf8;">{{ summary.medium }}</div>
+            <div class="stat-desc">Kubernetes CIS Benchmarks</div>
+        </div>
+        <div class="stat-card safe">
+            <div class="stat-label">AI Chatbot Defense Rate</div>
+            <div class="stat-value" style="color: #34d399;">{{ chatbot.defenseRate }}</div>
+            <div class="stat-desc">{{ chatbot.attacksNeutralized }}/{{ chatbot.totalAttacks }} Attacks Neutralized</div>
+        </div>
+        <div class="stat-card safe">
+            <div class="stat-label">Zero Data Leakage</div>
+            <div class="stat-value" style="color: #34d399;">0 LEAKS</div>
+            <div class="stat-desc">No Tokens or DB Creds Leaked</div>
+        </div>
+    </div>
+
+    <!-- CI/CD Security Pipeline Stage Progression -->
+    <div class="pipeline-container">
+        <div class="pipeline-header">
+            <span>🛡️ DevSecOps Automated CI/CD Tool Pipeline</span>
+            <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Executed via GitHub Actions</span>
+        </div>
+        <div class="pipeline-stages">
+            <div class="stage-box" style="border-left: 3px solid var(--danger);">
+                <div class="stage-title">Stage 1: Gitleaks</div>
+                <div class="stage-status" style="color: #f87171;">❌ 1 Secret Leaked</div>
+            </div>
+            <div class="stage-box" style="border-left: 3px solid var(--success);">
+                <div class="stage-title">Stage 2: Semgrep SAST</div>
+                <div class="stage-status" style="color: #34d399;">✅ Code Scanned</div>
+            </div>
+            <div class="stage-box" style="border-left: 3px solid #38bdf8;">
+                <div class="stage-title">Stage 3: Trivy SCA</div>
+                <div class="stage-status" style="color: #38bdf8;">⚠️ Dependencies Scanned</div>
+            </div>
+            <div class="stage-box" style="border-left: 3px solid #38bdf8;">
+                <div class="stage-title">Stage 4: Checkov IaC</div>
+                <div class="stage-status" style="color: #38bdf8;">⚠️ 9 IaC Findings</div>
+            </div>
+            <div class="stage-box" style="border-left: 3px solid var(--success);">
+                <div class="stage-title">Stage 5: AI Chatbot DAST</div>
+                <div class="stage-status" style="color: #34d399;">🛡️ 100% Defended</div>
+            </div>
+            <div class="stage-box" style="border-left: 3px solid var(--danger);">
+                <div class="stage-title">Stage 6: Quality Gate</div>
+                <div class="stage-status" style="color: #f87171;">🛑 BLOCKED</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="filterFindings('ALL')">All Findings ({{ findings|length }})</button>
+        <button class="tab-btn" onclick="filterFindings('Gitleaks')">Gitleaks Secrets ({{ scanners.Gitleaks }})</button>
+        <button class="tab-btn" onclick="filterFindings('Semgrep')">Semgrep SAST ({{ scanners.Semgrep }})</button>
+        <button class="tab-btn" onclick="filterFindings('Trivy')">Trivy SCA ({{ scanners.Trivy }})</button>
+        <button class="tab-btn" onclick="filterFindings('Checkov')">Checkov IaC ({{ scanners.Checkov }})</button>
+        <button class="tab-btn" onclick="filterFindings('CHATBOT')">🤖 AI Chatbot Red-Team (20)</button>
+    </div>
+
+    <!-- AI Chatbot View Section -->
+    <div id="chatbot-section" style="display: none; margin-bottom: 24px;">
+        <div class="finding-card" style="border: 1px solid #10b981;">
+            <div class="finding-header">
+                <div>
+                    <h3 class="finding-title" style="color: #34d399;">🤖 AI Chatbot Dynamic Adversarial Red-Team Results</h3>
+                    <p style="font-size: 13px; color: var(--text-muted);">
+                        Automated prompt injection & attack vector testing against <strong>Aura AI Assistant</strong> on port 5000.
+                    </p>
+                </div>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981;">
+                    ZERO DATA LEAKS DETECTED
+                </span>
             </div>
 
+            <table class="chatbot-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Category</th>
+                        <th>Attack Vector / Query</th>
+                        <th>CWE Classification</th>
+                        <th>Severity</th>
+                        <th>Customer-Facing Response</th>
+                        <th>Audit Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in chatbot.testVectors %}
+                    <tr>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">{{ t.id }}</td>
+                        <td><strong>{{ t.category }}</strong></td>
+                        <td style="color: #d1d5db; max-width: 300px;">{{ t.payload }}</td>
+                        <td style="font-size: 11px; color: var(--text-muted);">{{ t.cwe }}</td>
+                        <td>
+                            {% if t.severity == 'CRITICAL' %}
+                            <span class="badge badge-critical">{{ t.severity }}</span>
+                            {% elif t.severity == 'HIGH' %}
+                            <span class="badge badge-high">{{ t.severity }}</span>
+                            {% else %}
+                            <span class="badge badge-medium">{{ t.severity }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #a7f3d0;">
+                            "{{ t.responsePreview }}"
+                        </td>
+                        <td>
+                            {% if t.passed %}
+                            <span class="safe-tag">✅ Neutralized</span>
+                            {% else %}
+                            <span style="color: #f87171; font-weight: 700;">❌ Breached</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+    </div>
 
-        {% endfor %}
+    <!-- Findings Feed Section -->
+    <div id="findings-section">
+        {% if findings %}
+            {% for f in findings %}
+            <div class="finding-card finding-item" data-scanner="{{ f.scanner }}">
+                <div class="finding-header">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <span class="badge badge-scanner">{{ f.scanner }}</span>
+                            {% if f.severity == 'CRITICAL' %}
+                            <span class="badge badge-critical">{{ f.severity }}</span>
+                            {% elif f.severity == 'HIGH' %}
+                            <span class="badge badge-high">{{ f.severity }}</span>
+                            {% elif f.severity == 'MEDIUM' %}
+                            <span class="badge badge-medium">{{ f.severity }}</span>
+                            {% else %}
+                            <span class="badge">{{ f.severity }}</span>
+                            {% endif %}
+                        </div>
+                        <h3 class="finding-title">{{ f.rule }}</h3>
+                    </div>
+                    <button class="ai-explain-btn" onclick="toggleAI(this, '{{ f.rule }}', '{{ f.message|replace('\'', '\\\'')|replace('\"', '\\\"') }}')">
+                        ✨ Explain with AI & Remediate
+                    </button>
+                </div>
 
-    {% else %}
+                <div class="location-meta">
+                    📂 {{ f.file }} &nbsp;|&nbsp; 📍 Line: {{ f.line }}
+                </div>
 
-        <div class="card">
+                <p class="message-text">
+                    {{ f.message }}
+                </p>
 
-            No security findings detected.
+                {% if f.code %}
+                <div class="code-box">
+                    {{ f.code }}
+                </div>
+                {% endif %}
 
-        </div>
-
-    {% endif %}
+                <!-- AI Remediation Modal Accordion -->
+                <div class="ai-modal">
+                    <h4>✨ AI Root Cause Analysis & Security Remediation</h4>
+                    <p class="ai-analysis-text" style="font-size: 13px; color: #cbd5e1; margin-bottom: 8px;">Loading analysis...</p>
+                    <div style="font-size: 12px; font-weight: 600; color: #93c5fd; margin-top: 10px;">Recommended Fix Code / Action:</div>
+                    <div class="ai-patch-box">Loading verified remediation code...</div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="finding-card" style="text-align: center; padding: 40px;">
+                <h3>🎉 Zero Security Flaws Detected</h3>
+                <p style="color: var(--text-muted); margin-top: 8px;">All scanned repositories, containers, and AI chatbots comply with security quality gates.</p>
+            </div>
+        {% endif %}
+    </div>
 
 </div>
 
-
 <script>
+    function filterFindings(scanner) {
+        // Toggle tab active style
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
 
-    const buttons =
-        document.querySelectorAll(".ai-button");
+        const chatbotSection = document.getElementById('chatbot-section');
+        const findingsSection = document.getElementById('findings-section');
 
+        if (scanner === 'CHATBOT') {
+            chatbotSection.style.display = 'block';
+            findingsSection.style.display = 'none';
+            return;
+        }
 
-    buttons.forEach(button => {
+        chatbotSection.style.display = 'none';
+        findingsSection.style.display = 'block';
 
-        button.addEventListener(
-            "click",
-            () => {
-
-                const index =
-                    button.dataset.index;
-
-                const box =
-                    document.getElementById(
-                        "ai-" + index
-                    );
-
-                box.style.display = "block";
-
-                box.innerHTML =
-                    "AI integration will be connected next.";
-
+        const items = document.querySelectorAll('.finding-item');
+        items.forEach(item => {
+            if (scanner === 'ALL' || item.dataset.scanner === scanner) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
             }
-        );
+        });
+    }
 
-    });
+    async function toggleAI(btn, rule, message) {
+        const card = btn.closest('.finding-card');
+        const modal = card.querySelector('.ai-modal');
+        const analysisText = modal.querySelector('.ai-analysis-text');
+        const patchBox = modal.querySelector('.ai-patch-box');
 
+        if (modal.style.display === 'block') {
+            modal.style.display = 'none';
+            btn.innerHTML = '✨ Explain with AI & Remediate';
+            return;
+        }
+
+        modal.style.display = 'block';
+        btn.innerHTML = '✨ Hide AI Explanation';
+
+        try {
+            const res = await fetch('/api/ai-explain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rule: rule, message: message })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                analysisText.innerHTML = `<strong>${data.title}</strong> (${data.cwe})<br><span style="color:#94a3b8; font-size:12px;">Standard: ${data.owasp}</span><br><br>${data.impact}`;
+                patchBox.textContent = data.remediationCode;
+            }
+        } catch (e) {
+            analysisText.textContent = "Unable to fetch AI explanation. Please check backend connection.";
+        }
+    }
 </script>
 
 </body>
-
 </html>

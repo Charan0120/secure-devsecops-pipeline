@@ -1,0 +1,226 @@
+name: Secure DevSecOps Pipeline with Automated AI Chatbot Vulnerability Assessment
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  semgrep-sast:
+    name: Tool 1 - Semgrep SAST Scan
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - name: Checkout Chatbot Repository
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep SAST Analysis
+        run: |
+          mkdir -p reports
+          semgrep scan --config auto --sarif --output reports/semgrep.sarif || true
+          semgrep scan --config auto --json --output reports/semgrep.json || true
+
+      - name: Upload Semgrep SARIF Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-security-reports
+          path: reports/
+
+      - name: Upload to GitHub Security Tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: reports/semgrep.sarif
+          category: semgrep-sast
+
+  trivy-sca-secrets:
+    name: Tool 2 - Trivy Dependencies, Secrets & Container Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Chatbot Repository
+        uses: actions/checkout@v4
+
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@0.29.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          scanners: 'vuln,secret,misconfig'
+          skip-dirs: 'node_modules,.git'
+
+      - name: Generate Trivy JSON Report
+        uses: aquasecurity/trivy-action@0.29.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'json'
+          output: 'trivy-results.json'
+          scanners: 'vuln,secret,misconfig'
+          skip-dirs: 'node_modules,.git'
+
+      - name: Upload Trivy Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-security-reports
+          path: |
+            trivy-results.sarif
+            trivy-results.json
+
+      - name: Upload to GitHub Security Tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy-sca
+
+  checkov-iac:
+    name: Tool 3 - Checkov Infrastructure as Code Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Chatbot Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Checkov
+        run: pip install checkov
+
+      - name: Run Checkov IaC & Container Analysis
+        run: |
+          mkdir -p reports
+          checkov -d . --skip-path node_modules --output sarif --output-file-path reports/checkov.sarif || true
+          checkov -d . --skip-path node_modules --output json --output-file-path reports/checkov.json || true
+
+      - name: Upload Checkov Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkov-security-reports
+          path: reports/
+
+      - name: Upload to GitHub Security Tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: reports/checkov.sarif/results_sarif.sarif
+          category: checkov-iac
+        continue-on-error: true
+
+  ai-chatbot-agent-scan:
+    name: Tool 4 - AI Chatbot Dynamic Adversarial & Prompt Injection Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Chatbot Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Start Chatbot API Backend in Test Environment
+        run: |
+          npm run dev:api &
+          echo "Waiting for Chatbot API on port 4000..."
+          for i in {1..30}; do
+            if curl -s http://localhost:4000/health | grep -q "ok"; then
+              echo "Chatbot API is healthy and ready for security assessment!"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Error: Chatbot API failed to launch within 30 seconds"
+          exit 1
+
+      - name: Run AI Adversarial Red-Teaming Agent
+        run: node scripts/chatbot-adversarial-agent.js
+
+      - name: Upload Chatbot Security Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chatbot-agent-security-reports
+          path: reports/chatbot-agent-security.*
+
+      - name: Upload to GitHub Security Tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: reports/chatbot-agent-security.sarif
+          category: ai-chatbot-agent-security
+        continue-on-error: true
+
+  quality-gate:
+    name: Security Quality Gate & Build Verification
+    needs: [semgrep-sast, trivy-sca-secrets, checkov-iac, ai-chatbot-agent-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Chatbot Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Download Semgrep Reports
+        uses: actions/download-artifact@v4
+        with:
+          name: semgrep-security-reports
+          path: reports/
+
+      - name: Download Trivy Reports
+        uses: actions/download-artifact@v4
+        with:
+          name: trivy-security-reports
+          path: reports/
+
+      - name: Download Checkov Reports
+        uses: actions/download-artifact@v4
+        with:
+          name: checkov-security-reports
+          path: reports/
+
+      - name: Download Chatbot Security Reports
+        uses: actions/download-artifact@v4
+        with:
+          name: chatbot-agent-security-reports
+          path: reports/
+
+      - name: Move Trivy SARIF into Reports Directory
+        run: |
+          if [ -f "reports/trivy-results.sarif" ]; then
+            cp reports/trivy-results.sarif reports/trivy.sarif
+          fi
+
+      - name: Evaluate Security Quality Gate
+        env:
+          QUALITY_GATE_MAX_CRITICAL: '0'
+          QUALITY_GATE_MAX_HIGH: '3'
+        run: node .github/scripts/evaluate-quality-gate.js
+
+      - name: Publish Findings to DevSecOps Dashboard
+        if: always()
+        env:
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
+        run: node scripts/publish-ci-to-dashboard.js
+
+      - name: Build Application (Gated on Security Pass)
+        run: |
+          npm ci
+          npm run build

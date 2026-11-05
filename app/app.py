@@ -1,5 +1,6 @@
 import re
-from flask import Flask, request, jsonify
+import os
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
@@ -104,7 +105,7 @@ def classify_prompt(prompt: str):
 
     # 1. Attack Signatures Detection
     is_command_inj = bool(re.search(r'(;|\||`|\$\(|\bsh\b|\bbash\b|\bcat\s+/etc/|\bwhoami\b)', norm))
-    is_sqli = bool(re.search(r"('|\bOR\b|\bAND\b|--|;\s*DROP|UNION\s+SELECT)", norm, re.IGNORECASE))
+    is_sqli = bool(re.search(r"('|\"|--|/\*|\*/|union\s+select|select\s+.*from|insert\s+into|drop\s+table|'\s*or\s+'|'\s*or\s+1=1|\bor\s+\d+=\d+)", norm, re.IGNORECASE))
     is_xss = bool(re.search(r'(<script|javascript:|onerror=|<img)', norm, re.IGNORECASE))
     is_path_traversal = bool(re.search(r'(\.\./|\.\.\\|/etc/passwd|/etc/shadow|c:\\windows)', norm, re.IGNORECASE))
     is_prompt_inj = bool(re.search(r'(ignore\s+all\s+previous|system\s+prompt|you\s+are\s+now\s+dan|disregard\s+all|override\s+rules)', norm, re.IGNORECASE))
@@ -131,6 +132,9 @@ def classify_prompt(prompt: str):
 
 @app.route('/')
 def home():
+    template_path = os.path.join(os.path.dirname(__file__), 'templates', 'ecommerce.html')
+    if os.path.exists(template_path):
+        return render_template('ecommerce.html')
     return """
     <h1>Secure DevSecOps Pipeline</h1>
     <p>Application and Aura AI Chatbot are running successfully!</p>
