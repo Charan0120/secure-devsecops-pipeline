@@ -62,6 +62,19 @@ if (
 
 
 # --------------------
+# AI Chatbot Security & Zero Data Leakage Results
+# --------------------
+chatbot_file = "reports/chatbot-agent-security.json" if os.path.exists("reports/chatbot-agent-security.json") else "chatbot-agent-security.json"
+if os.path.exists(chatbot_file):
+    with open(chatbot_file, "r", encoding="utf-8") as f:
+        cdata = json.load(f)
+    breaches = cdata.get("securityBreaches", 0)
+    data_leaks = cdata.get("dataLeaksDetected", 0)
+    if breaches > 0 or data_leaks > 0:
+        critical += (breaches + data_leaks)
+
+
+# --------------------
 # Risk Calculation
 # --------------------
 score = (
