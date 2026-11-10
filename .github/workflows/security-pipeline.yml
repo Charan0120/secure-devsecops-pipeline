@@ -1,61 +1,76 @@
+
 name: Secure DevSecOps Pipeline
 
 on:
   push:
+    branches:
+      - "**"
+
+  pull_request:
     branches:
       - main
 
 permissions:
   contents: read
   security-events: write
+  actions: read
 
 jobs:
   security:
+    name: Security Scanning
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
 
-      # --------------------
-      # Checkout Repository
-      # --------------------
+      # -----------------------------
+      # 1. Checkout Repository
+      # -----------------------------
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # --------------------
-      # Setup Python
-      # --------------------
+      # -----------------------------
+      # 2. Setup Python
+      # -----------------------------
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
 
-      # --------------------
-      # Gitleaks Secret Scan
-      # --------------------
+      # -----------------------------
+      # 3. Setup Node.js
+      # -----------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # -----------------------------
+      # 4. Gitleaks Secret Scan
+      # -----------------------------
       - name: Gitleaks Scan
         continue-on-error: true
         uses: gitleaks/gitleaks-action@v2
 
-      # --------------------
-      # Semgrep SAST Scan
-      # --------------------
+      # -----------------------------
+      # 5. Semgrep SAST Scan
+      # -----------------------------
       - name: Install Semgrep
         run: |
+          python -m pip install --upgrade pip
           pip install semgrep
 
       - name: Run Semgrep
         continue-on-error: true
         run: |
           semgrep scan \
-          --config=auto . \
-          --json \
-          --output semgrep-results.json
+            --config=auto . \
+            --json \
+            --output semgrep-results.json
 
-      # --------------------
-      # Trivy Vulnerability Scan
-      # --------------------
-      # Trivy
+      # -----------------------------
+      # 6. Trivy Filesystem Scan
+      # -----------------------------
       - name: Run Trivy
         continue-on-error: true
         uses: aquasecurity/trivy-action@master
@@ -64,115 +79,168 @@ jobs:
           scan-ref: .
           format: json
           output: trivy-results.json
+          exit-code: "0"
 
-      # --------------------
-      # Checkov IaC Scan
-      # --------------------
-      # Checkov
+      # -----------------------------
+      # 7. Checkov IaC Scan
+      # -----------------------------
       - name: Checkov Scan
         continue-on-error: true
         uses: bridgecrewio/checkov-action@master
         with:
           directory: .
           output_format: sarif
+          output_file_path: reports/checkov-results.sarif
           soft_fail: true
           skip_check: CKV_K8S_43
 
-      # --------------------
-      # AI Chatbot Dynamic Adversarial & Zero Data Leakage Scan
-      # --------------------
-      - name: Start AI Chatbot Service in Test Environment
+      # -----------------------------
+      # 8. Install Application Dependencies
+      # -----------------------------
+      - name: Install Backend Dependencies
         run: |
-          pip install -r app/requirements.txt
+          if [ -f app/requirements.txt ]; then
+            pip install -r app/requirements.txt
+          fi
+
+      - name: Install Frontend Dependencies
+        working-directory: ecommerce
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      # -----------------------------
+      # 9. Start Chatbot in CI Environment
+      # -----------------------------
+      - name: Start AI Chatbot Service
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AURA_AI_URL: ${{ secrets.AURA_AI_URL }}
+          AURA_AI_TOKEN: ${{ secrets.AURA_AI_TOKEN }}
+        run: |
+          mkdir -p reports
+
           python app/app.py > /tmp/chatbot.log 2>&1 &
-          echo "Waiting for Chatbot service on port 5000..."
-          for i in {1..25}; do
-            if curl -s http://localhost:5000/health | grep -q "healthy"; then
-              echo "AI Chatbot is online and ready for security testing!"
+
+          echo $! > /tmp/chatbot.pid
+
+          echo "Waiting for Flask chatbot..."
+
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:5000/health; then
+              echo "Chatbot started successfully."
               exit 0
             fi
-            sleep 1
+
+            sleep 2
           done
-          echo "Error: Chatbot failed to start. Service logs:"
-          cat /tmp/chatbot.log || true
+
+          echo "Chatbot failed to start."
+          cat /tmp/chatbot.log
           exit 1
 
-      - name: Run AI Adversarial Prompt Injection & Data Leakage Scanner
+      # -----------------------------
+      # 10. AI Adversarial Security Scan
+      # -----------------------------
+      - name: Run AI Chatbot Security Scanner
+        env:
+          CHATBOT_URL: http://127.0.0.1:5000
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AURA_AI_URL: ${{ secrets.AURA_AI_URL }}
+          AURA_AI_TOKEN: ${{ secrets.AURA_AI_TOKEN }}
         run: |
           python security/chatbot_agent_scanner.py
 
-      # --------------------
-      # Debug Generated Files
-      # --------------------
-      - name: Debug Files
-        if: always()
-        run: |
-          echo "=== JSON Files ==="
-          find . -name "*.json"
-
-          echo "=== SARIF Files ==="
-          find . -name "*.sarif"
-
-      # --------------------
-      # Risk Score Engine
-      # --------------------
+      # -----------------------------
+      # 11. Calculate Security Risk Score
+      # -----------------------------
       - name: Calculate Security Risk Score
+        if: always()
         run: |
           python security/risk_score.py
 
-      # --------------------
-      # Create Reports Folder
-      # --------------------
-      - name: Create Reports Directory
+      # -----------------------------
+      # 12. Collect Security Reports
+      # -----------------------------
+      - name: Collect Security Reports
         if: always()
         run: |
           mkdir -p reports
 
-          if [ -f semgrep-results.json ]; then
-            cp semgrep-results.json reports/
-          fi
+          [ -f semgrep-results.json ] && \
+            cp semgrep-results.json reports/ || true
 
-          if [ -f trivy-results.json ]; then
-            cp trivy-results.json reports/
-          fi
+          [ -f trivy-results.json ] && \
+            cp trivy-results.json reports/ || true
 
-          if [ -f results.sarif ]; then
-            cp results.sarif reports/
-          fi
+          [ -f chatbot-agent-security.json ] && \
+            cp chatbot-agent-security.json reports/ || true
 
-          if [ -f reports/chatbot-agent-security.json ]; then
-            cp reports/chatbot-agent-security.json reports/
-          fi
+          [ -f reports/chatbot-agent-security.json ] || true
 
-      # --------------------
-      # Upload Reports
-      # --------------------
+          echo "Available reports:"
+          find reports -type f
+
+      # -----------------------------
+      # 13. Upload Security Reports
+      # -----------------------------
       - name: Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: security-reports
           path: reports/
+          if-no-files-found: warn
+          retention-days: 30
 
-      # --------------------
-      # Publish Findings to DevSecOps Dashboard
-      # --------------------
-      - name: Publish Findings to DevSecOps Dashboard
+      # -----------------------------
+      # 14. Publish Results to Dashboard
+      # -----------------------------
+      - name: Publish Findings to Dashboard
         if: always()
         env:
           DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
         run: |
-          python -c "
-          import os, json, urllib.request
-          dashboard_url = os.environ.get('DASHBOARD_URL')
+          python - <<'PY'
+          import os
+          import json
+          import urllib.request
+
+          dashboard_url = os.environ.get("DASHBOARD_URL")
+
           if not dashboard_url:
-              print('[INFO] DASHBOARD_URL secret not set. Reports preserved in GitHub Artifacts.')
-              exit(0)
-          payload = {'commitSha': os.environ.get('GITHUB_SHA', 'ci-run'), 'branch': os.environ.get('GITHUB_REF_NAME', 'main')}
+              print("Dashboard URL not configured.")
+              raise SystemExit(0)
+
+          payload = {
+              "commitSha": os.environ.get("GITHUB_SHA"),
+              "branch": os.environ.get("GITHUB_REF_NAME")
+          }
+
           try:
-              req = urllib.request.Request(f'{dashboard_url.rstrip(\"/\")}/api/security/ingest-ci-results', data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'}, method='POST')
-              with urllib.request.urlopen(req, timeout=10) as r:
-                  print('[SUCCESS] Transmitted findings to DevSecOps Dashboard!')
-          except Exception as e:
-              print(f'[-] Warning transmitting to dashboard: {e}')
-          "
+              request = urllib.request.Request(
+                  dashboard_url.rstrip("/") + "/api/security/ingest-ci-results",
+                  data=json.dumps(payload).encode("utf-8"),
+                  headers={"Content-Type": "application/json"},
+                  method="POST"
+              )
+
+              with urllib.request.urlopen(request, timeout=15) as response:
+                  print("Dashboard response:", response.status)
+
+          except Exception as error:
+              print("Dashboard publishing warning:", error)
+          PY
+
+      # -----------------------------
+      # 15. Stop Chatbot Service
+      # -----------------------------
+      - name: Stop Chatbot Service
+        if: always()
+        run: |
+          if [ -f /tmp/chatbot.pid ]; then
+            kill "$(cat /tmp/chatbot.pid)" || true
+          fi
