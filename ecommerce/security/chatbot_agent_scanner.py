@@ -15,7 +15,7 @@ import time
 import urllib.request
 import urllib.error
 
-API_BASE = os.environ.get("API_URL", "http://localhost:4000/api")
+API_BASE = os.environ.get("API_URL", "http://localhost:5000/api")
 REPORTS_DIR = os.path.join(os.getcwd(), "reports")
 
 TEST_VECTORS = [

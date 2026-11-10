@@ -18,7 +18,7 @@
 import fs from "fs";
 import path from "path";
 
-const API_BASE = process.env.API_URL || "http://localhost:4000/api";
+const API_BASE = process.env.API_URL || "http://localhost:5000/api";
 const REPORTS_DIR = path.resolve(process.cwd(), "reports");
 
 // 20 Structured Adversarial Test Vectors

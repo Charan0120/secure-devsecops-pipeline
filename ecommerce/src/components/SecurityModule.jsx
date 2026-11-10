@@ -23,7 +23,7 @@ import {
   Filter
 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:4000/api/security';
+const API_BASE = 'http://localhost:5000/api/security';
 
 export default function SecurityModule({ onBackToStore }) {
   const [pipelineState, setPipelineState] = useState('idle'); // idle | running | passed | failed

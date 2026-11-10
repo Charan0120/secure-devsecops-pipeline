@@ -1,6 +1,9 @@
 import os
 import re
 import urllib.parse
+from dotenv import load_dotenv
+from flask_cors import CORS
+from rag import generate_rag_answer
 
 # Werkzeug 3.x / Flask backward-compatibility shim
 try:
@@ -15,6 +18,26 @@ except (ImportError, AttributeError):
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
+load_dotenv()
+
+
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://localhost:5000",
+            "http://127.0.0.1:5000",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:3000"
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
+
+
+
 
 # 15 Authorized Predefined Topics & Responses
 AUTHORIZED_KNOWLEDGE = [
@@ -158,37 +181,43 @@ def health():
     return jsonify({"status": "healthy", "service": "aura-chatbot-api"})
 
 
+
 @app.route('/api/chat', methods=['POST'])
 def chat():
     data = request.get_json(silent=True) or {}
-    prompt = data.get("prompt", "")
+    prompt = data.get("prompt", "").strip()
 
     if not prompt:
-        return jsonify({"ok": False, "error": "Prompt required"}), 400
+        return jsonify({
+            "ok": False,
+            "error": "Prompt required"
+        }), 400
 
-    classification = classify_prompt(prompt)
+    if len(prompt) > 2000:
+        return jsonify({
+            "ok": False,
+            "error": "Message is too long"
+        }), 400
 
-    if classification["blocked"]:
+    try:
+        # Use your existing RAG system:
+        # SQLite + ChromaDB + Colab Qwen
+        answer = generate_rag_answer(prompt)
+
         return jsonify({
             "ok": True,
-            "answer": "Try again...",
+            "answer": answer,
             "isPredefined": False,
-            "isSecurityAnomaly": True,
-            "securityEvent": {
-                "riskCategory": classification["category"],
-                "severity": classification["severity"],
-                "cwe": classification["cwe"],
-                "actionTaken": "BLOCKED & RECORDED IN AUDIT DASHBOARD"
-            }
-        })
-    else:
-        return jsonify({
-            "ok": True,
-            "answer": classification["response"],
-            "isPredefined": True,
             "isSecurityAnomaly": False
         })
 
+    except Exception:
+        app.logger.exception("Aura RAG request failed")
+
+        return jsonify({
+            "ok": False,
+            "error": "Aura AI is temporarily unavailable."
+        }), 503
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

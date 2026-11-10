@@ -138,7 +138,7 @@ jobs:
           npm run dev:api &
           echo "Waiting for Chatbot API on port 4000..."
           for i in {1..30}; do
-            if curl -s http://localhost:4000/health | grep -q "ok"; then
+            if curl -s http://localhost:5000/health | grep -q "ok"; then
               echo "Chatbot API is healthy and ready for security assessment!"
               exit 0
             fi

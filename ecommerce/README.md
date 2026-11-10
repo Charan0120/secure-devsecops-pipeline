@@ -11,7 +11,7 @@ A modern, interactive React platform with an integrated **AI Chatbot** and conti
 - **Dual Expertise**:
   - **E-Commerce & Tech Advisor**: Assists users with products, titanium wireless headphones, mechanical keyboards, ergonomic laptop stands, orders, and shipping policies.
   - **DevSecOps Advisor**: Explains how the underlying backend is protected against SQLi, command injection, and vulnerable dependencies.
-- **Backend Integration**: Connects to `POST http://localhost:4000/api/chat` with graceful offline fallback.
+- **Backend Integration**: Connects to `POST http://localhost:5000/api/chat` with graceful offline fallback.
 
 ### 2. 🛡️ 6-Stage DevSecOps Pipeline Architecture (According to Design Diagram)
 Features a dedicated DevSecOps Security Audit view implementing the 6-stage lifecycle specification:

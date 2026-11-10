@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Wireless Headphones",
+    "category": "Electronics",
+    "price": 1999,
+    "stock": 15,
+    "description": "Wireless headphones with Bluetooth connectivity, noise reduction, comfortable ear cushions and long battery life.",
+    "features": "Bluetooth, noise reduction, rechargeable battery",
+    "brand": "Aura Store"
+  },
+  {
+    "id": 2,
+    "name": "Smart Watch",
+    "category": "Electronics",
+    "price": 2499,
+    "stock": 8,
+    "description": "Smart watch with fitness tracking, heart rate monitoring, notifications and multiple sports modes.",
+    "features": "Fitness tracking, heart rate monitor, notifications",
+    "brand": "Aura Store"
+  },
+  {
+    "id": 3,
+    "name": "Bluetooth Speaker",
+    "category": "Electronics",
+    "price": 1299,
+    "stock": 20,
+    "description": "Portable Bluetooth speaker with clear sound, compact design and rechargeable battery for indoor and outdoor use.",
+    "features": "Portable, Bluetooth, rechargeable battery",
+    "brand": "Aura Store"
+  }
+]

@@ -2,14 +2,14 @@ async function runTests() {
   console.log("=== COMPREHENSIVE DEVSECOPS & AURA CHATBOT VERIFICATION ===");
 
   // 1. Fetch predefined prompts
-  const resPrompts = await fetch("http://localhost:4000/api/chat/predefined-prompts").then(r => r.json());
+  const resPrompts = await fetch("http://localhost:5000/api/chat/predefined-prompts").then(r => r.json());
   console.log(`[1] Total Predefined Prompts in Backend: ${resPrompts.total}`);
   if (resPrompts.total !== 11) throw new Error(`Expected 11 predefined prompts, got ${resPrompts.total}!`);
 
   // Test each of the 11 prompts
   console.log("\n[2] Verifying All 11 Predefined Prompts Execution:");
   for (const p of resPrompts.prompts) {
-    const res = await fetch("http://localhost:4000/api/chat", {
+    const res = await fetch("http://localhost:5000/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt: p.prompt })
@@ -38,7 +38,7 @@ async function runTests() {
   ];
 
   for (const t of testAnomalies) {
-    const res = await fetch("http://localhost:4000/api/chat", {
+    const res = await fetch("http://localhost:5000/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt: t.prompt })
@@ -53,7 +53,7 @@ async function runTests() {
 
   // 4. Verify DevSecOps Database Telemetry
   console.log("\n[4] Verifying DevSecOps Security Audit Telemetry Store:");
-  const auditEvents = await fetch("http://localhost:4000/api/security/chatbot-events").then(r => r.json());
+  const auditEvents = await fetch("http://localhost:5000/api/security/chatbot-events").then(r => r.json());
   console.log(`  ✓ Total Intercepted Events in DevSecOps Audit Store: ${auditEvents.total}`);
   console.log(`  ✓ Latest Intercepted Event CWE: ${auditEvents.events[0]?.cwe}`);
   console.log(`  ✓ Latest Action Taken: ${auditEvents.events[0]?.actionTaken}`);
@@ -66,7 +66,7 @@ async function runTests() {
   const rShop = await fetch("http://localhost:5173");
   console.log(`  ✓ Blackbucks E-Commerce Website (port 5173): HTTP ${rShop.status} OK`);
 
-  const rApi = await fetch("http://localhost:4000/api/security/stats");
+  const rApi = await fetch("http://localhost:5000/api/security/stats");
   console.log(`  ✓ DevSecOps Express Security API (port 4000): HTTP ${rApi.status} OK`);
 
   console.log("\n=== ALL SYSTEMS PASSING WITH ZERO ERRORS ===");

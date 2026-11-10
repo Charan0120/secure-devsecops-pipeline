@@ -11,3 +11,5 @@ ENV/
 node_modules/
 dist/
 .DS_Store
+app/products.db
+app/chroma_db/

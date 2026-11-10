@@ -148,75 +148,85 @@ export default function ChatbotWidget({ onSelectCategory, onSearchProduct }) {
     }
   }, [messages, isOpen]);
 
-  const handleSend = async (textToSend) => {
-    const query = (textToSend || input).trim();
-    if (!query || loading) return;
+  
 
-    const userMsg = {
-      id: Date.now(),
-      sender: 'user',
-      text: query,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+const handleSend = async (textToSend) => {
+  const query = (textToSend || input).trim();
+  if (!query || loading) return;
+
+  const userMsg = {
+    id: Date.now(),
+    sender: 'user',
+    text: query,
+    time: new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  };
+
+  setMessages((prev) => [...prev, userMsg]);
+  setInput('');
+  setLoading(true);
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+  try {
+    const res = await fetch('http://localhost:5000/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: query, mode: 'general' }),
+      signal: controller.signal
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || `Server error: ${res.status}`);
+    }
+
+    const botMsg = {
+      id: Date.now() + 1,
+      sender: 'bot',
+      text: data.answer || 'I could not generate a response.',
+      isPredefined: data.isPredefined,
+      isSecurityAnomaly: data.isSecurityAnomaly,
+      securityEvent: data.securityEvent,
+      time: new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     };
 
-    setMessages((prev) => [...prev, userMsg]);
-    setInput('');
-    setLoading(true);
+    setMessages((prev) => [...prev, botMsg]);
 
-    try {
-      const res = await fetch('http://localhost:4000/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: query, mode: 'general' })
-      });
+  } catch (error) {
+    console.error('Chatbot error:', error);
 
-      if (!res.ok) throw new Error('API server unavailable');
-      const data = await res.json();
+    const errorMessage = error.name === 'AbortError'
+      ? 'The request timed out. Please try again.'
+      : 'Sorry, the AI service is temporarily unavailable. Please try again.';
 
-      const botMsg = {
+    setMessages((prev) => [
+      ...prev,
+      {
         id: Date.now() + 1,
         sender: 'bot',
-        text: data.answer,
-        isPredefined: data.isPredefined,
-        isSecurityAnomaly: data.isSecurityAnomaly,
-        securityEvent: data.securityEvent,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-
-      setMessages((prev) => [...prev, botMsg]);
-    } catch {
-      // Local fallback if API is unreachable
-      const lower = query.toLowerCase();
-      let matched = PREDEFINED_PROMPTS.find(p => lower.includes(p.shortLabel.toLowerCase()) || p.prompt.toLowerCase() === lower);
-
-      let botMsg;
-      if (matched) {
-        botMsg = {
-          id: Date.now() + 1,
-          sender: 'bot',
-          text: `[Offline Local Mode] Response for "${matched.shortLabel}": Validated authorized predefined query.`,
-          isPredefined: true,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-      } else {
-        botMsg = {
-          id: Date.now() + 1,
-          sender: 'bot',
-          text: "Try again...",
-          isSecurityAnomaly: true,
-          securityEvent: {
-            riskCategory: "UNAUTHORIZED_INPUT",
-            severity: "MEDIUM",
-            cwe: "CWE-20: Improper Input Validation"
-          },
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
+        text: errorMessage,
+        time: new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
       }
-      setMessages((prev) => [...prev, botMsg]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    ]);
+
+  } finally {
+    clearTimeout(timeoutId);
+    setLoading(false);
+  }
+};
+
+
 
   const handleClear = () => {
     setMessages([
