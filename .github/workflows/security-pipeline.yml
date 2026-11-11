@@ -94,3 +94,124 @@ jobs:
           else
             npm install
           fi
+
+      - name: Build Frontend
+        working-directory: ecommerce
+        continue-on-error: true
+        run: |
+          if npm run | grep -q " build"; then
+            npm run build
+          else
+            echo "No build script found; skipping frontend build."
+          fi
+
+      # 8. Build the product retrieval index used by the chatbot
+      - name: Build ChromaDB Product Index
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        working-directory: app
+        run: |
+          python -c "from rag import index_products; index_products()"
+
+      # 9. Start the Flask chatbot API
+      - name: Start AI Chatbot Service
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AURA_AI_URL: ${{ secrets.AURA_AI_URL }}
+          AURA_AI_TOKEN: ${{ secrets.AURA_AI_TOKEN }}
+        run: |
+          python app/app.py > /tmp/chatbot.log 2>&1 &
+          echo $! > /tmp/chatbot.pid
+
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:5000/health; then
+              echo "Chatbot started successfully."
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Chatbot did not become healthy. Startup log:"
+          cat /tmp/chatbot.log
+          exit 1
+
+      # 10. Run the custom adversarial chatbot security tests
+      - name: Run AI Chatbot Security Scanner
+        continue-on-error: true
+        env:
+          API_URL: http://127.0.0.1:5000/api
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AURA_AI_URL: ${{ secrets.AURA_AI_URL }}
+          AURA_AI_TOKEN: ${{ secrets.AURA_AI_TOKEN }}
+        run: |
+          python security/chatbot_agent_scanner.py
+
+      # 11. Stop chatbot even if the scan had an error
+      - name: Stop Chatbot Service
+        if: always()
+        run: |
+          if [ -f /tmp/chatbot.pid ]; then
+            kill "$(cat /tmp/chatbot.pid)" || true
+          fi
+
+      # 12. Collect and verify reports
+      - name: Collect Security Reports
+        if: always()
+        run: |
+          mkdir -p reports
+
+          # The scanner writes this report in both the project root and reports/.
+          if [ -f chatbot-agent-security.json ]; then
+            cp chatbot-agent-security.json reports/chatbot-agent-security.json
+          fi
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          expected = {
+              "Semgrep": "semgrep-results.json",
+              "Trivy": "trivy-results.json",
+              "Checkov": "checkov-results.sarif",
+              "Chatbot": "chatbot-agent-security.json",
+          }
+
+          report_dir = Path("reports")
+          status = {}
+
+          for scanner, filename in expected.items():
+              path = report_dir / filename
+              exists = path.is_file() and path.stat().st_size > 0
+              status[scanner] = "AVAILABLE" if exists else "MISSING"
+              print(f"{scanner}: {status[scanner]} ({filename})")
+
+          (report_dir / "report-status.json").write_text(
+              json.dumps(status, indent=2),
+              encoding="utf-8"
+          )
+
+          print("\nReport files:")
+          for path in sorted(report_dir.glob("*")):
+              if path.is_file():
+                  print(f"- {path} ({path.stat().st_size} bytes)")
+          PY
+
+      # 13. Calculate the project risk score
+      - name: Calculate Security Risk Score
+        if: always()
+        run: |
+          if [ -f security/risk_score.py ]; then
+            python security/risk_score.py || true
+          else
+            echo "security/risk_score.py not found; skipping risk score calculation."
+          fi
+
+      # 14. Upload reports even when an individual scanner fails
+      - name: Upload Security Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: reports/
+          if-no-files-found: warn
+          retention-days: 30
