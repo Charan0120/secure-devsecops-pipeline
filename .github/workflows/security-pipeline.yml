@@ -105,6 +105,27 @@ jobs:
           else
             echo "No build script found; skipping frontend build."
           fi
+
+      - name: Diagnose Chatbot Environment
+        run: |
+          echo "Checking isolated chatbot Python..."
+          .venv-chatbot/bin/python --version
+
+          echo "Checking ChromaDB..."
+          .venv-chatbot/bin/python -m pip show chromadb
+
+          echo "Checking dependencies..."
+          .venv-chatbot/bin/python -m pip check
+
+          echo "Testing import..."
+          .venv-chatbot/bin/python -c "import chromadb; print(chromadb.__version__)"
+        
+      - name: Create Isolated Chatbot Environment
+        run: |
+          python -m venv .venv-chatbot
+          .venv-chatbot/bin/python -m pip install --upgrade pip
+          .venv-chatbot/bin/python -m pip install -r app/requirements.txt
+
       - name: Diagnose ChromaDB Dependencies
         run: |
           pip show chromadb
