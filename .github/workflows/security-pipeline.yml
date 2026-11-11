@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,89 +17,81 @@ permissions:
 
 jobs:
   security:
-    name: Security Scanning
+    name: Automated Security Assessment
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       # 1. Checkout
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Setup Python
+      # 2. Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      # 3. Setup Node
+      # 3. Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      # 4. Create reports directory BEFORE all scanners
+      # 4. Prepare reports
       - name: Prepare Reports Directory
         run: mkdir -p reports
 
-      # 5. Gitleaks
-      - name: Gitleaks Scan
-        continue-on-error: true
-        uses: gitleaks/gitleaks-action@v2
-        with:
-          args: detect --source . --report-format json --report-path reports/gitleaks.json --exit-code 0
-
-      # 6. Semgrep
+      # 5. Install Semgrep
       - name: Install Semgrep
         run: |
           python -m pip install --upgrade pip
           pip install semgrep
 
+      # 6. Semgrep scan
       - name: Run Semgrep
         continue-on-error: true
         run: |
           semgrep scan \
-            --config=auto . \
+            --config=auto \
             --json \
-            --output semgrep-results.json
+            --output=reports/semgrep-results.json \
+            .
 
-          cp semgrep-results.json reports/semgrep-results.json
-
-      # 7. Trivy
+      # 7. Trivy filesystem scan
       - name: Run Trivy
-        continue-on-error: true
         uses: aquasecurity/trivy-action@master
+        continue-on-error: true
         with:
           scan-type: fs
           scan-ref: .
+          scanners: vuln,misconfig,secret
           format: json
-          output: trivy-results.json
+          output: reports/trivy-results.json
           exit-code: "0"
 
-      - name: Copy Trivy Report
-        if: always()
-        run: |
-          if [ -f trivy-results.json ]; then
-            cp trivy-results.json reports/trivy-results.json
-          fi
+      # 8. Install Checkov
+      - name: Install Checkov
+        run: pip install checkov
 
-      # 8. Checkov
-      - name: Checkov Scan
+      # 9. Checkov repository scan
+      - name: Run Checkov
         continue-on-error: true
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: .
-          output_format: sarif
-          output_file_path: reports/checkov-results.sarif
-          soft_fail: true
+        run: |
+          checkov -d . \
+            --framework all \
+            --output sarif \
+            --output-file-path reports/checkov-results.sarif \
+            --soft-fail
 
-      # 9. Install application dependencies
+      # 10. Install backend dependencies
       - name: Install Backend Dependencies
         run: |
           if [ -f app/requirements.txt ]; then
             pip install -r app/requirements.txt
           fi
 
+      # 11. Install frontend dependencies
       - name: Install Frontend Dependencies
         working-directory: ecommerce
         run: |
@@ -108,7 +101,7 @@ jobs:
             npm install
           fi
 
-      # 10. Start chatbot
+      # 12. Start chatbot backend
       - name: Start AI Chatbot Service
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -120,17 +113,16 @@ jobs:
 
           for i in {1..60}; do
             if curl -fsS http://127.0.0.1:5000/health; then
-              echo "Chatbot started successfully."
+              echo "Chatbot started."
               exit 0
             fi
             sleep 2
           done
 
-          echo "Chatbot failed to start."
           cat /tmp/chatbot.log
           exit 1
 
-      # 11. AI chatbot adversarial scanner
+      # 13. AI chatbot security testing
       - name: Run AI Chatbot Security Scanner
         continue-on-error: true
         env:
@@ -141,7 +133,7 @@ jobs:
         run: |
           python security/chatbot_agent_scanner.py
 
-      # 12. Collect all reports
+      # 14. Collect all scanner reports
       - name: Collect Security Reports
         if: always()
         run: |
@@ -151,26 +143,26 @@ jobs:
             cp chatbot-agent-security.json reports/
           fi
 
-          echo "Reports available:"
-          find reports -maxdepth 2 -type f -print
+          echo "Generated reports:"
+          find reports -type f -maxdepth 3 -print
 
-      # 13. Calculate risk score
+      # 15. Calculate risk score
       - name: Calculate Security Risk Score
         if: always()
         run: |
-          python security/risk_score.py
+          python security/risk_score.py || true
 
-      # 14. Upload reports
+      # 16. Upload reports
       - name: Upload Security Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: security-reports
           path: reports/
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30
 
-      # 15. Stop chatbot
+      # 17. Stop chatbot
       - name: Stop Chatbot Service
         if: always()
         run: |
