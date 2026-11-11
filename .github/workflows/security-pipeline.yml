@@ -22,6 +22,7 @@ jobs:
     env:
       AURA_AI_URL: ${{ secrets.AURA_AI_URL }}
       AURA_AI_TOKEN: ${{ secrets.AURA_AI_TOKEN }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       API_URL: http://127.0.0.1:5000/api
 
     steps:
