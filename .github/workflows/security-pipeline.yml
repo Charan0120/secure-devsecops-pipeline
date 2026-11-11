@@ -105,7 +105,14 @@ jobs:
           else
             echo "No build script found; skipping frontend build."
           fi
-
+      - name: Diagnose ChromaDB Dependencies
+        run: |
+          pip show chromadb
+          pip show opentelemetry-api
+          pip show opentelemetry-sdk
+          pip show opentelemetry-exporter-otlp-proto-common
+          pip show opentelemetry-exporter-otlp-proto-grpc
+          pip check
       # 8. Build the product retrieval index used by the chatbot
       - name: Build ChromaDB Product Index
         env:
