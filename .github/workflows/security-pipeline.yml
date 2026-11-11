@@ -40,11 +40,7 @@ jobs:
       - name: Prepare Reports Directory
         run: mkdir -p reports
 
-      - name: Install Backend Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r app/requirements.txt
-          pip check
+      
 
       # 4. Semgrep SAST
       - name: Install Semgrep
@@ -83,7 +79,13 @@ jobs:
             --output sarif \
             --output-file-path reports/checkov-results.sarif \
             --soft-fail
-
+      - name: Create Isolated Chatbot Environment
+        run: |
+          python -m venv .venv-chatbot
+          .venv-chatbot/bin/python -m pip install --upgrade pip
+          .venv-chatbot/bin/python -m pip install -r app/requirements.txt
+          .venv-chatbot/bin/python -m pip check
+          .venv-chatbot/bin/python -c "import chromadb; print('ChromaDB:', chromadb.__version__)"
       # 7. Install frontend dependencies and validate frontend build
       - name: Install Frontend Dependencies
         working-directory: ecommerce
@@ -115,9 +117,8 @@ jobs:
       - name: Build ChromaDB Product Index
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        working-directory: app
         run: |
-          python -c "from rag import index_products; index_products()"
+          .venv-chatbot/bin/python -c "import sys; sys.path.insert(0, 'app'); from rag import index_products; index_products()"
 
       # 9. Start the Flask chatbot API
       - name: Start AI Chatbot Service
@@ -126,7 +127,7 @@ jobs:
           AURA_AI_URL: ${{ secrets.AURA_AI_URL }}
           AURA_AI_TOKEN: ${{ secrets.AURA_AI_TOKEN }}
         run: |
-          python app/app.py > /tmp/chatbot.log 2>&1 &
+          .venv-chatbot/bin/python app/app.py > /tmp/chatbot.log 2>&1 &
           echo $! > /tmp/chatbot.pid
 
           for i in {1..60}; do
@@ -150,7 +151,7 @@ jobs:
           AURA_AI_URL: ${{ secrets.AURA_AI_URL }}
           AURA_AI_TOKEN: ${{ secrets.AURA_AI_TOKEN }}
         run: |
-          python security/chatbot_agent_scanner.py
+          .venv-chatbot/bin/python security/chatbot_agent_scanner.py
 
       # 11. Stop chatbot even if the scan had an error
       - name: Stop Chatbot Service
