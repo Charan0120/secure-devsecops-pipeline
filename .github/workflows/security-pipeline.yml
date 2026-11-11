@@ -46,6 +46,7 @@ jobs:
           if [ -f app/requirements.txt ]; then
             pip install -r app/requirements.txt
           fi
+          pip check
 
       # 4. Semgrep SAST
       - name: Install Semgrep
