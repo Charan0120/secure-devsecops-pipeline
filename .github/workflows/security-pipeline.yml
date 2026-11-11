@@ -172,7 +172,6 @@ jobs:
 
       # 16. Run chatbot security scanner
       - name: AI Chatbot Security Testing
-        continue-on-error: true
         run: |
           .venv-chatbot/bin/python security/chatbot_agent_scanner.py
 
