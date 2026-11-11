@@ -1,12 +1,11 @@
+
 name: Secure DevSecOps Pipeline
 
 on:
   push:
-    branches:
-      - "**"
+    branches: ["**"]
   pull_request:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -15,48 +14,54 @@ permissions:
   actions: read
 
 jobs:
-  security:
-    name: Automated Security Assessment
+  security-scan:
+    name: Security Scanning and Chatbot Testing
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
+
+    env:
+      AURA_AI_URL: ${{ secrets.AURA_AI_URL }}
+      AURA_AI_TOKEN: ${{ secrets.AURA_AI_TOKEN }}
+      API_URL: http://127.0.0.1:5000/api
 
     steps:
       # 1. Checkout source code
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Set up runtimes
+      # 2. Setup Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+          cache-dependency-path: app/requirements.txt
 
+      # 3. Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: npm
+          cache-dependency-path: ecommerce/package-lock.json
 
-      # 3. Prepare report directory and install Python dependencies once
-      - name: Prepare Reports Directory
+      # 4. Create reports directory
+      - name: Create Reports Directory
         run: mkdir -p reports
 
-      
-
-      # 4. Semgrep SAST
-      - name: Install Semgrep
-        run: pip install semgrep
-
-      - name: Run Semgrep
+      # 5. Semgrep scan
+      - name: Semgrep Security Scan
         continue-on-error: true
         run: |
+          python -m pip install semgrep
           semgrep scan \
             --config=auto \
             --json \
             --output=reports/semgrep-results.json \
             .
 
-      # 5. Trivy filesystem, dependency and configuration scan
-      - name: Run Trivy
+      # 6. Trivy scan
+      - name: Trivy Vulnerability Scan
         uses: aquasecurity/trivy-action@master
         continue-on-error: true
         with:
@@ -67,179 +72,163 @@ jobs:
           output: reports/trivy-results.json
           exit-code: "0"
 
-      # 6. Checkov infrastructure-as-code scan
-      - name: Install Checkov
-        run: pip install checkov
-
-      - name: Run Checkov
+      # 7. Checkov scan
+      - name: Checkov Infrastructure Scan
         continue-on-error: true
         run: |
+          python -m pip install checkov
           checkov -d . \
-            --framework all \
-            --output sarif \
+            -o sarif \
             --output-file-path reports/checkov-results.sarif \
             --soft-fail
-      - name: Create Isolated Chatbot Environment
-        run: |
-          python -m venv .venv-chatbot
-          .venv-chatbot/bin/python -m pip install --upgrade pip
-          .venv-chatbot/bin/python -m pip install -r app/requirements.txt
-          .venv-chatbot/bin/python -m pip check
-          .venv-chatbot/bin/python -c "import chromadb; print('ChromaDB:', chromadb.__version__)"
-      # 7. Install frontend dependencies and validate frontend build
-      - name: Install Frontend Dependencies
-        working-directory: ecommerce
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
 
-      - name: Build Frontend
-        working-directory: ecommerce
-        continue-on-error: true
-        run: |
-          if npm run | grep -q " build"; then
-            npm run build
-          else
-            echo "No build script found; skipping frontend build."
-          fi
-
-      - name: Diagnose Chatbot Environment
-        run: |
-          echo "Checking isolated chatbot Python..."
-          .venv-chatbot/bin/python --version
-
-          echo "Checking ChromaDB..."
-          .venv-chatbot/bin/python -m pip show chromadb
-
-          echo "Checking dependencies..."
-          .venv-chatbot/bin/python -m pip check
-
-          echo "Testing import..."
-          .venv-chatbot/bin/python -c "import chromadb; print(chromadb.__version__)"
-        
-      - name: Create Isolated Chatbot Environment
+      # 8. Create isolated chatbot environment
+      - name: Create Chatbot Virtual Environment
         run: |
           python -m venv .venv-chatbot
           .venv-chatbot/bin/python -m pip install --upgrade pip
           .venv-chatbot/bin/python -m pip install -r app/requirements.txt
 
-      - name: Diagnose ChromaDB Dependencies
+      # 9. Verify chatbot dependencies
+      - name: Verify Chatbot Dependencies
         run: |
-          pip show chromadb
-          pip show opentelemetry-api
-          pip show opentelemetry-sdk
-          pip show opentelemetry-exporter-otlp-proto-common
-          pip show opentelemetry-exporter-otlp-proto-grpc
-          pip check
-      # 8. Build the product retrieval index used by the chatbot
+          .venv-chatbot/bin/python -m pip check
+          .venv-chatbot/bin/python -c "import flask, chromadb; print('Flask and ChromaDB imports successful')"
+
+      # 10. Build ChromaDB product index
       - name: Build ChromaDB Product Index
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PYTHONPATH: app
         run: |
-          .venv-chatbot/bin/python -c "import sys; sys.path.insert(0, 'app'); from rag import index_products; index_products()"
+          .venv-chatbot/bin/python -c "from rag import index_products; index_products()"
 
-      # 9. Start the Flask chatbot API
-      - name: Start AI Chatbot Service
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          AURA_AI_URL: ${{ secrets.AURA_AI_URL }}
-          AURA_AI_TOKEN: ${{ secrets.AURA_AI_TOKEN }}
+      # 11. Build frontend
+      - name: Build React Frontend
+        working-directory: ecommerce
         run: |
-          .venv-chatbot/bin/python app/app.py > /tmp/chatbot.log 2>&1 &
-          echo $! > /tmp/chatbot.pid
+          npm ci
+          npm run build
 
-          for i in {1..60}; do
+      # 12. Check Qwen API configuration
+      - name: Verify Qwen API Configuration
+        run: |
+          if [ -z "$AURA_AI_URL" ] || [ -z "$AURA_AI_TOKEN" ]; then
+            echo "::error::AURA_AI_URL or AURA_AI_TOKEN GitHub secret is missing."
+            exit 1
+          fi
+          echo "Qwen API secrets are configured."
+
+      # 13. Start chatbot
+      - name: Start Chatbot Service
+        run: |
+          nohup .venv-chatbot/bin/python app/app.py \
+            > chatbot-server.log 2>&1 &
+          echo $! > chatbot.pid
+
+      # 14. Wait for chatbot health
+      - name: Check Chatbot Health
+        run: |
+          for i in {1..30}; do
             if curl -fsS http://127.0.0.1:5000/health; then
-              echo "Chatbot started successfully."
+              echo "Chatbot is healthy."
               exit 0
             fi
             sleep 2
           done
 
-          echo "Chatbot did not become healthy. Startup log:"
-          cat /tmp/chatbot.log
+          echo "Chatbot failed to start."
+          cat chatbot-server.log
           exit 1
 
-      # 10. Run the custom adversarial chatbot security tests
-      - name: Run AI Chatbot Security Scanner
+      # 15. Test Qwen inference connection
+      - name: Test Qwen AI Connection
+        run: |
+          .venv-chatbot/bin/python - <<'PY'
+          import os
+          import requests
+
+          url = os.environ["AURA_AI_URL"].rstrip("/") + "/generate"
+          token = os.environ["AURA_AI_TOKEN"]
+
+          response = requests.post(
+              url,
+              headers={"x-api-token": token},
+              json={
+                  "question": "Reply with the word CONNECTED.",
+                  "context": "This is a CI connectivity test."
+              },
+              timeout=90
+          )
+
+          response.raise_for_status()
+          data = response.json()
+
+          if not data.get("answer"):
+              raise RuntimeError("Qwen API returned no answer.")
+
+          print("Qwen inference API connection successful.")
+          PY
+
+      # 16. Run chatbot security scanner
+      - name: AI Chatbot Security Testing
         continue-on-error: true
-        env:
-          API_URL: http://127.0.0.1:5000/api
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          AURA_AI_URL: ${{ secrets.AURA_AI_URL }}
-          AURA_AI_TOKEN: ${{ secrets.AURA_AI_TOKEN }}
         run: |
           .venv-chatbot/bin/python security/chatbot_agent_scanner.py
 
-      # 11. Stop chatbot even if the scan had an error
+      # 17. Stop chatbot service
       - name: Stop Chatbot Service
         if: always()
         run: |
-          if [ -f /tmp/chatbot.pid ]; then
-            kill "$(cat /tmp/chatbot.pid)" || true
+          if [ -f chatbot.pid ]; then
+            kill "$(cat chatbot.pid)" || true
           fi
 
-      # 12. Collect and verify reports
-      - name: Collect Security Reports
+      # 18. Collect chatbot report
+      - name: Collect Chatbot Security Report
         if: always()
         run: |
-          mkdir -p reports
-
-          # The scanner writes this report in both the project root and reports/.
           if [ -f chatbot-agent-security.json ]; then
-            cp chatbot-agent-security.json reports/chatbot-agent-security.json
+            cp chatbot-agent-security.json reports/
+          elif [ -f reports/chatbot-agent-security.json ]; then
+            echo "Chatbot report already exists."
+          else
+            echo "::warning::Chatbot security report was not generated."
           fi
 
+      # 19. Generate scanner status report
+      - name: Generate Scanner Status
+        if: always()
+        run: |
           python - <<'PY'
           import json
-          from pathlib import Path
+          import os
 
-          expected = {
-              "Semgrep": "semgrep-results.json",
-              "Trivy": "trivy-results.json",
-              "Checkov": "checkov-results.sarif",
-              "Chatbot": "chatbot-agent-security.json",
+          files = {
+              "semgrep": "reports/semgrep-results.json",
+              "trivy": "reports/trivy-results.json",
+              "checkov": "reports/checkov-results.sarif",
+              "chatbot": "reports/chatbot-agent-security.json"
           }
 
-          report_dir = Path("reports")
-          status = {}
+          status = {
+              name: "COMPLETED" if os.path.exists(path) else "MISSING"
+              for name, path in files.items()
+          }
 
-          for scanner, filename in expected.items():
-              path = report_dir / filename
-              exists = path.is_file() and path.stat().st_size > 0
-              status[scanner] = "AVAILABLE" if exists else "MISSING"
-              print(f"{scanner}: {status[scanner]} ({filename})")
+          with open("reports/scanner-status.json", "w") as f:
+              json.dump(status, f, indent=4)
 
-          (report_dir / "report-status.json").write_text(
-              json.dumps(status, indent=2),
-              encoding="utf-8"
-          )
-
-          print("\nReport files:")
-          for path in sorted(report_dir.glob("*")):
-              if path.is_file():
-                  print(f"- {path} ({path.stat().st_size} bytes)")
+          print(json.dumps(status, indent=4))
           PY
 
-      # 13. Calculate the project risk score
-      - name: Calculate Security Risk Score
-        if: always()
-        run: |
-          if [ -f security/risk_score.py ]; then
-            python security/risk_score.py || true
-          else
-            echo "security/risk_score.py not found; skipping risk score calculation."
-          fi
-
-      # 14. Upload reports even when an individual scanner fails
+      # 20. Upload security reports
       - name: Upload Security Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: security-reports
-          path: reports/
+          path: |
+            reports/
+            chatbot-server.log
           if-no-files-found: warn
           retention-days: 30
