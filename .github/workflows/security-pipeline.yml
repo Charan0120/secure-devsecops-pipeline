@@ -195,9 +195,27 @@ jobs:
       # 13. Start chatbot
       - name: Start Chatbot Service
         run: |
-          nohup .venv-chatbot/bin/python app/app.py \
+          echo "Starting Flask using the current repository app.py"
+
+          pkill -f "python app/app.py" || true
+          sleep 2
+
+          PYTHONPATH=app nohup .venv-chatbot/bin/python -u app/app.py \
             > chatbot-server.log 2>&1 &
-          echo $! > chatbot.pid
+
+          echo $! > chatbot-server.pid
+
+          sleep 5
+
+          echo "===== Flask process ====="
+          ps -ef | grep '[p]ython.*app.py'
+
+          echo "===== Flask startup log ====="
+          cat chatbot-server.log
+
+          echo "===== Health check ====="
+          curl -i http://127.0.0.1:5000/health
+
 
       # 14. Wait for chatbot health
       - name: Check Chatbot Health
