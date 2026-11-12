@@ -151,6 +151,47 @@ jobs:
               print('RESULT:', result)
           "
 
+
+      - name: Inspect Actual Chatbot Code
+        run: |
+          .venv-chatbot/bin/python - <<'PY'
+          import sys
+          import inspect
+          import hashlib
+
+          sys.path.insert(0, "app")
+          import app
+
+          print("APP MODULE:", app.__file__)
+
+          print("\nAPP FILE HASH:")
+          with open(app.__file__, "rb") as f:
+              print(hashlib.sha256(f.read()).hexdigest())
+
+          print("\nCLASSIFY FUNCTION SOURCE:")
+          print(inspect.getsource(app.classify_prompt))
+
+          print("\nCHAT ROUTE SOURCE:")
+          print(inspect.getsource(app.chat))
+          PY
+
+
+      - name: Inspect Flask Security Function
+        run: |
+          .venv-chatbot/bin/python - <<'PY'
+          import sys
+          import inspect
+
+          sys.path.insert(0, "app")
+          from app import classify_prompt
+
+          print("FUNCTION MODULE:", classify_prompt.__module__)
+          print("FUNCTION FILE:", inspect.getfile(classify_prompt))
+          print("\nACTUAL FUNCTION SOURCE:")
+          print(inspect.getsource(classify_prompt))
+          PY
+
+
       # 13. Start chatbot
       - name: Start Chatbot Service
         run: |
