@@ -395,28 +395,50 @@ jobs:
 
       # 16. Run chatbot security scanner
       - name: AI Chatbot Security Testing
-        run: |
-          .venv-chatbot/bin/python security/chatbot_agent_scanner.py
-
-      # 17. Stop chatbot service
-      - name: Stop Chatbot Service
         if: always()
         run: |
-          if [ -f chatbot.pid ]; then
-            kill "$(cat chatbot.pid)" || true
+          echo "Starting AI Chatbot Security Scanner"
+
+          .venv-chatbot/bin/python security/chatbot_agent_scanner.py
+
+          SCANNER_EXIT=$?
+
+          echo "Scanner exit code: $SCANNER_EXIT"
+          echo "===== Generated chatbot reports ====="
+          find . -name "chatbot-agent-security.json" -type f
+
+          exit $SCANNER_EXIT
+      # 17. Stop chatbot service
+            - name: Stop Chatbot Service
+        if: always()
+        run: |
+          if [ -f chatbot-server.pid ]; then
+            kill "$(cat chatbot-server.pid)" || true
+            echo "Flask service stopped."
+          else
+            echo "Flask PID file not found."
           fi
 
       # 18. Collect chatbot report
       - name: Collect Chatbot Security Report
         if: always()
         run: |
-          if [ -f chatbot-agent-security.json ]; then
+          mkdir -p reports
+
+          if [ -f reports/chatbot-agent-security.json ]; then
+            echo "Chatbot report found in reports directory."
+
+          elif [ -f chatbot-agent-security.json ]; then
             cp chatbot-agent-security.json reports/
-          elif [ -f reports/chatbot-agent-security.json ]; then
-            echo "Chatbot report already exists."
+
           else
-            echo "::warning::Chatbot security report was not generated."
+            echo "::warning::Chatbot report was not generated."
+            echo "Searching for available JSON reports..."
+            find . -name "*.json" -type f
           fi
+
+          echo "===== Final chatbot report ====="
+          ls -lh reports/chatbot-agent-security.json || true
 
       # 19. Generate scanner status report
       - name: Generate Scanner Status

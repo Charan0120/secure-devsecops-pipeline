@@ -72,9 +72,11 @@ securityContext:
     }
 }
 
+
 @app.route("/")
 def home():
     data = get_dashboard_summary()
+
     return render_template(
         "index.html",
         findings=data["findings"],
@@ -82,7 +84,8 @@ def home():
         score=data["score"],
         status=data["status"],
         summary=data["summary"],
-        scanners=data["scannersCount"]
+        scanners=data["scannersCount"],
+        scanner_status=data.get("scanners", {})
     )
 
 @app.route("/api/summary", methods=["GET"])
