@@ -182,6 +182,7 @@ def health():
 
 
 
+
 @app.route('/api/chat', methods=['POST'])
 def chat():
     data = request.get_json(silent=True) or {}
@@ -199,9 +200,33 @@ def chat():
             "error": "Message is too long"
         }), 400
 
+    # Step 1: Check prompt for security threats
+    security_check = classify_prompt(prompt)
+
+    print("DEBUG SECURITY CHECK:", repr(security_check), flush=True)
+    # Step 2: Block suspicious or unauthorized prompts
+    if security_check["blocked"]:
+        return jsonify({
+            "ok": True,
+            "answer": "Your request was blocked because it contains potentially unsafe or unauthorized content.",
+            "isPredefined": False,
+            "isSecurityAnomaly": True,
+            "securityCategory": security_check.get("category"),
+            "severity": security_check.get("severity"),
+            "cwe": security_check.get("cwe")
+        }), 200
+
+    # Step 3: Return authorized predefined response
+    if "response" in security_check:
+        return jsonify({
+            "ok": True,
+            "answer": security_check["response"],
+            "isPredefined": True,
+            "isSecurityAnomaly": False
+        }), 200
+
+    # Step 4: Process through RAG and Qwen
     try:
-        # Use your existing RAG system:
-        # SQLite + ChromaDB + Colab Qwen
         answer = generate_rag_answer(prompt)
 
         return jsonify({
@@ -209,7 +234,7 @@ def chat():
             "answer": answer,
             "isPredefined": False,
             "isSecurityAnomaly": False
-        })
+        }), 200
 
     except Exception:
         app.logger.exception("Aura RAG request failed")
@@ -218,6 +243,7 @@ def chat():
             "ok": False,
             "error": "Aura AI is temporarily unavailable."
         }), 503
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
