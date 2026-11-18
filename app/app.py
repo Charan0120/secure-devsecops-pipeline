@@ -134,16 +134,62 @@ AUTHORIZED_KNOWLEDGE = [
 ]
 
 
+# Sensitive-data request patterns. These block requests to disclose secrets or
+# private records; they do not block ordinary questions about security policies.
+SENSITIVE_REQUEST_PATTERNS = [
+    r"\b(?:show|reveal|tell|give|print|display|dump|extract|retrieve|fetch|provide|list|export)\b.{0,100}\b(?:passwords?|passcodes?|credentials?|api[\s_-]?keys?|access[\s_-]?tokens?|refresh[\s_-]?tokens?|jwt|private[\s_-]?keys?|secrets?|database[\s_-]?(?:url|credentials?|password))\b",
+    r"\b(?:passwords?|passcodes?|credentials?|api[\s_-]?keys?|access[\s_-]?tokens?|private[\s_-]?keys?|secrets?)\b.{0,100}\b(?:show|reveal|tell|give|print|display|dump|extract|retrieve|fetch|provide|list|export)\b",
+    r"\b(?:admin(?:istrator)?(?:_demo)?|admin_demo|another user|other users?|customer account)\b.{0,100}\b(?:login details?|log[\s_-]?in details?|credentials?|username|password|account details?|access details?)\b",
+    r"\b(?:login details?|log[\s_-]?in details?|credentials?|username|password|account details?|access details?)\b.{0,100}\b(?:admin(?:istrator)?(?:_demo)?|admin_demo|another user|other users?|customer account)\b",
+    r"\b(?:sensitive_data|user_credentials|credentials_data|secret_store|auth(?:entication)?_data)\b",
+    r"\b(?:show|reveal|dump|read|query|extract|access|retrieve|list|export|what is stored|what does .{0,30} contain)\b.{0,100}\b(?:database|db|table|records?|rows?|schema|contents?|data)\b",
+    r"\b(?:database|db|table|records?|rows?|schema|contents?|data)\b.{0,100}\b(?:show|reveal|dump|read|query|extract|access|retrieve|list|export|what is stored|contents?)\b",
+    r"\b(?:confidential|private|sensitive|secret)\b.{0,80}\b(?:database|db|table|records?|rows?|contents?|data)\b",
+    r"\b(?:database|db|table|records?|rows?|contents?|data)\b.{0,80}\b(?:confidential|private|sensitive|secret)\b",
+    r"\b(?:encode|decode|base64|encrypt|decrypt|convert|obfuscate)\b.{0,100}\b(?:passwords?|credentials?|api[\s_-]?keys?|tokens?|secrets?|admin)\b",
+    r"\b(?:passwords?|credentials?|api[\s_-]?keys?|tokens?|secrets?|admin)\b.{0,100}\b(?:encode|decode|base64|encrypt|decrypt|convert|obfuscate)\b",
+    r"\b(?:other users?|another user|someone else's|all users?|customers?)\b.{0,100}\b(?:personal data|private data|email addresses|phone numbers|payment details|passwords?|credentials?)\b",
+    r"\b(?:reveal|show|print|repeat|disclose|tell me)\b.{0,80}\b(?:system prompt|hidden instructions|developer instructions)\b",
+    r"\b(?:system prompt|hidden instructions|developer instructions)\b.{0,80}\b(?:reveal|show|print|repeat|disclose)\b",
+]
+
+SECRET_VALUE_PATTERNS = [
+    # Common private-key block
+    r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
+    # Common cloud/API token formats (conservative pattern checks)
+    r"\bAKIA[0-9A-Z]{16}\b",
+    r"\bgh[pousr]_[A-Za-z0-9]{20,}\b",
+    r"\bsk-[A-Za-z0-9_-]{20,}\b",
+    # Credential assignments and database connection strings
+    r"(?i)\b(?:password|passwd|api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*['\"]?[^\s'\"]{8,}",
+    r"(?i)\b(?:postgres|postgresql|mysql|mongodb(?:\+srv)?):\/\/[^:\s]+:[^@\s]+@",
+]
+
+SAFE_REFUSAL = (
+    "I can't provide passwords, API keys, access tokens, private credentials, "
+    "hidden instructions, or another user's private information. "
+    "I can help with general product and store-related questions."
+)
+
 def classify_prompt(prompt: str):
-    """Classifies prompt against security threats and authorized knowledge boundaries."""
+    """Block common attack payloads and requests for secrets/private information."""
     norm = prompt.strip().lower()
 
-    # 1. Attack Signatures Detection
-    is_command_inj = bool(re.search(r'(;|\||`|\$\(|\bsh\b|\bbash\b|\bcat\s+/etc/|\bwhoami\b)', norm))
-    is_sqli = bool(re.search(r"('|\"|--|/\*|\*/|union\s+select|select\s+.*from|insert\s+into|drop\s+table|'\s*or\s+'|'\s*or\s+1=1|\bor\s+\d+=\d+)", norm, re.IGNORECASE))
+    is_command_inj = bool(re.search(
+        r'(;|\||`|\$\(|\bsh\b|\bbash\b|\bcat\s+/etc/|\bwhoami\b)', norm
+    ))
+    is_sqli = bool(re.search(
+        r"('|\"|--|/\*|\*/|union\s+select|select\s+.*from|insert\s+into|drop\s+table|'\s*or\s+'|'\s*or\s+1=1|\bor\s+\d+=\d+)",
+        norm, re.IGNORECASE
+    ))
     is_xss = bool(re.search(r'(<script|javascript:|onerror=|<img)', norm, re.IGNORECASE))
-    is_path_traversal = bool(re.search(r'(\.\./|\.\.\\|/etc/passwd|/etc/shadow|c:\\windows)', norm, re.IGNORECASE))
-    is_prompt_inj = bool(re.search(r'(ignore\s+all\s+previous|system\s+prompt|you\s+are\s+now\s+dan|disregard\s+all|override\s+rules)', norm, re.IGNORECASE))
+    is_path_traversal = bool(re.search(
+        r'(\.\./|\.\.\\|/etc/passwd|/etc/shadow|c:\\windows)', norm, re.IGNORECASE
+    ))
+    is_prompt_inj = bool(re.search(
+        r'(ignore\s+all\s+previous|system\s+prompt|you\s+are\s+now\s+dan|disregard\s+all|override\s+rules)',
+        norm, re.IGNORECASE
+    ))
 
     if is_command_inj:
         return {"blocked": True, "cwe": "CWE-78: OS Command Injection", "category": "COMMAND_INJECTION", "severity": "CRITICAL"}
@@ -156,13 +202,36 @@ def classify_prompt(prompt: str):
     if is_prompt_inj:
         return {"blocked": True, "cwe": "CWE-20: Improper Input Validation (Prompt Injection)", "category": "PROMPT_INJECTION", "severity": "HIGH"}
 
-    # 2. Check Authorized Knowledge Base
+    # Block disclosure/access attempts, while allowing harmless discussion
+    # such as password-reset help or advice on creating a strong password.
+    has_sensitive_request = any(
+        re.search(pattern, norm, re.IGNORECASE | re.DOTALL)
+        for pattern in SENSITIVE_REQUEST_PATTERNS
+    )
+
+    if has_sensitive_request:
+        return {
+            "blocked": True,
+            "category": "SENSITIVE_DATA_REQUEST",
+            "severity": "HIGH"
+        }
+
+    # Check all 15 predefined topics. The normal-input fallback must be OUTSIDE this loop.
     for item in AUTHORIZED_KNOWLEDGE:
-        if any(k in norm for k in item["keywords"]):
+        if any(keyword in norm for keyword in item["keywords"]):
             return {"blocked": False, "response": item["response"], "title": item["title"]}
 
-    # 3. Out-of-Scope / Unauthorized Query
-    return {"blocked": True, "cwe": "CWE-20: Improper Input Validation", "category": "UNAUTHORIZED_INPUT", "severity": "MEDIUM"}
+    return {"blocked": False, "category": "NORMAL_INPUT", "severity": "INFO"}
+
+
+def contains_sensitive_output(answer: str) -> bool:
+    """Detect likely secret material before it is returned to the client."""
+    if not isinstance(answer, str):
+        return True
+    return any(
+        re.search(pattern, answer, re.IGNORECASE | re.DOTALL)
+        for pattern in SECRET_VALUE_PATTERNS
+    )
 
 
 @app.route('/')
@@ -186,29 +255,22 @@ def health():
 @app.route('/api/chat', methods=['POST'])
 def chat():
     data = request.get_json(silent=True) or {}
-    prompt = data.get("prompt", "").strip()
+    prompt = data.get("prompt", "")
+    if not isinstance(prompt, str):
+        return jsonify({"ok": False, "error": "Prompt must be text"}), 400
+    prompt = prompt.strip()
 
     if not prompt:
-        return jsonify({
-            "ok": False,
-            "error": "Prompt required"
-        }), 400
-
+        return jsonify({"ok": False, "error": "Prompt required"}), 400
     if len(prompt) > 2000:
-        return jsonify({
-            "ok": False,
-            "error": "Message is too long"
-        }), 400
+        return jsonify({"ok": False, "error": "Message is too long"}), 400
 
-    # Step 1: Check prompt for security threats
     security_check = classify_prompt(prompt)
 
-    print("DEBUG SECURITY CHECK:", repr(security_check), flush=True)
-    # Step 2: Block suspicious or unauthorized prompts
     if security_check["blocked"]:
         return jsonify({
             "ok": True,
-            "answer": "Your request was blocked because it contains potentially unsafe or unauthorized content.",
+            "answer": SAFE_REFUSAL,
             "isPredefined": False,
             "isSecurityAnomaly": True,
             "securityCategory": security_check.get("category"),
@@ -216,18 +278,37 @@ def chat():
             "cwe": security_check.get("cwe")
         }), 200
 
-    # Step 3: Return authorized predefined response
     if "response" in security_check:
+        answer = security_check["response"]
+        if contains_sensitive_output(answer):
+            app.logger.error("Sensitive-output guard blocked a predefined response.")
+            return jsonify({
+                "ok": True,
+                "answer": SAFE_REFUSAL,
+                "isPredefined": False,
+                "isSecurityAnomaly": True,
+                "securityCategory": "SENSITIVE_OUTPUT_BLOCKED",
+                "severity": "CRITICAL"
+            }), 200
         return jsonify({
             "ok": True,
-            "answer": security_check["response"],
+            "answer": answer,
             "isPredefined": True,
             "isSecurityAnomaly": False
         }), 200
 
-    # Step 4: Process through RAG and Qwen
     try:
         answer = generate_rag_answer(prompt)
+        if contains_sensitive_output(answer):
+            app.logger.warning("Sensitive-output guard blocked a generated response.")
+            return jsonify({
+                "ok": True,
+                "answer": SAFE_REFUSAL,
+                "isPredefined": False,
+                "isSecurityAnomaly": True,
+                "securityCategory": "SENSITIVE_OUTPUT_BLOCKED",
+                "severity": "CRITICAL"
+            }), 200
 
         return jsonify({
             "ok": True,
@@ -238,7 +319,6 @@ def chat():
 
     except Exception:
         app.logger.exception("Aura RAG request failed")
-
         return jsonify({
             "ok": False,
             "error": "Aura AI is temporarily unavailable."
