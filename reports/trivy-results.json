@@ -1,18 +1,18 @@
 {
   "SchemaVersion": 2,
   "Trivy": {
-    "Version": "0.74.0"
+    "Version": "0.76.2"
   },
-  "ReportID": "01a01ebd-3ce3-759a-ac04-926d10fab8f0",
-  "CreatedAt": "2026-08-20T10:35:13.507368211Z",
-  "ArtifactID": "sha256:bf7d28ce19e0fe33f454a1d051d84a97a97c3b63a20a9f175cecfae024fb4a21",
+  "ReportID": "01a1cf07-73a7-72f8-bdd7-58e3bc950858",
+  "CreatedAt": "2026-11-12T09:12:14.503195763Z",
+  "ArtifactID": "sha256:1247d392cde07c5557e2825b36b53e164893a2a30343c134441a088bf1f08684",
   "ArtifactName": ".",
   "ArtifactType": "repository",
   "Metadata": {
     "RepoURL": "https://github.com/Charan0120/secure-devsecops-pipeline",
     "Branch": "main",
-    "Commit": "d260aacaf3729e4ac364dbb9d9bad60dd0f7bee9",
-    "CommitMsg": "Test Trivy vulnerability detection",
+    "Commit": "9973e8f3ff2c49008a4796ef2383e1c59da84a02",
+    "CommitMsg": "new yaml code",
     "Author": "Charan0120 \u003cbalusacharan@gmail.com\u003e",
     "Committer": "Charan0120 \u003cbalusacharan@gmail.com\u003e"
   },
@@ -25,10 +25,73 @@
         {
           "Name": "Flask",
           "Identifier": {
-            "PURL": "pkg:pypi/flask@2.2.2",
-            "UID": "8c8fe4168b42b85a"
+            "PURL": "pkg:pypi/flask@3.1.3",
+            "UID": "20a1b8c21806cee0"
           },
-          "Version": "2.2.2",
+          "Version": "3.1.3",
+          "Locations": [
+            {
+              "StartLine": 6,
+              "EndLine": 6
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "Jinja2",
+          "Identifier": {
+            "PURL": "pkg:pypi/jinja2@3.1.6",
+            "UID": "3d2bdf2e3a047fcb"
+          },
+          "Version": "3.1.6",
+          "Locations": [
+            {
+              "StartLine": 13,
+              "EndLine": 13
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "MarkupSafe",
+          "Identifier": {
+            "PURL": "pkg:pypi/markupsafe@3.0.3",
+            "UID": "852f10642ec55292"
+          },
+          "Version": "3.0.3",
+          "Locations": [
+            {
+              "StartLine": 15,
+              "EndLine": 15
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "Werkzeug",
+          "Identifier": {
+            "PURL": "pkg:pypi/werkzeug@3.1.8",
+            "UID": "6a38d4b06537f4ea"
+          },
+          "Version": "3.1.8",
+          "Locations": [
+            {
+              "StartLine": 24,
+              "EndLine": 24
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "annotated-types",
+          "Identifier": {
+            "PURL": "pkg:pypi/annotated-types@0.8.0",
+            "UID": "7987e46ad64471a0"
+          },
+          "Version": "0.8.0",
+          "Licenses": [
+            "MIT"
+          ],
           "Locations": [
             {
               "StartLine": 1,
@@ -36,146 +99,876 @@
             }
           ],
           "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "anyio",
+          "Identifier": {
+            "PURL": "pkg:pypi/anyio@4.16.0",
+            "UID": "56421aeb9c106e63"
+          },
+          "Version": "4.16.0",
+          "Licenses": [
+            "MIT"
+          ],
+          "Locations": [
+            {
+              "StartLine": 2,
+              "EndLine": 2
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "blinker",
+          "Identifier": {
+            "PURL": "pkg:pypi/blinker@1.9.0",
+            "UID": "db7072279a7dc830"
+          },
+          "Version": "1.9.0",
+          "Locations": [
+            {
+              "StartLine": 3,
+              "EndLine": 3
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "chromadb",
+          "Identifier": {
+            "PURL": "pkg:pypi/chromadb@0.5.23",
+            "UID": "fc4708214e1aad8"
+          },
+          "Version": "0.5.23",
+          "Locations": [
+            {
+              "StartLine": 29,
+              "EndLine": 29
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "click",
+          "Identifier": {
+            "PURL": "pkg:pypi/click@8.4.2",
+            "UID": "4b3972e5084dca4d"
+          },
+          "Version": "8.4.2",
+          "Licenses": [
+            "BSD-3-Clause"
+          ],
+          "Locations": [
+            {
+              "StartLine": 4,
+              "EndLine": 4
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "colorama",
+          "Identifier": {
+            "PURL": "pkg:pypi/colorama@0.4.6",
+            "UID": "890cafacff1cd31b"
+          },
+          "Version": "0.4.6",
+          "Licenses": [
+            "BSD-3-Clause"
+          ],
+          "Locations": [
+            {
+              "StartLine": 5,
+              "EndLine": 5
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "flask-cors",
+          "Identifier": {
+            "PURL": "pkg:pypi/flask-cors@6.0.5",
+            "UID": "a9d6dd120b3eed06"
+          },
+          "Version": "6.0.5",
+          "Locations": [
+            {
+              "StartLine": 7,
+              "EndLine": 7
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "h11",
+          "Identifier": {
+            "PURL": "pkg:pypi/h11@0.16.0",
+            "UID": "cabeb5b4a19cf0c5"
+          },
+          "Version": "0.16.0",
+          "Licenses": [
+            "MIT"
+          ],
+          "Locations": [
+            {
+              "StartLine": 8,
+              "EndLine": 8
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "httpcore2",
+          "Identifier": {
+            "PURL": "pkg:pypi/httpcore2@2.16.0",
+            "UID": "cd2e9a7905e73ed2"
+          },
+          "Version": "2.16.0",
+          "Locations": [
+            {
+              "StartLine": 9,
+              "EndLine": 9
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "httpx2",
+          "Identifier": {
+            "PURL": "pkg:pypi/httpx2@2.16.0",
+            "UID": "2fccd363329240ef"
+          },
+          "Version": "2.16.0",
+          "Locations": [
+            {
+              "StartLine": 10,
+              "EndLine": 10
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "idna",
+          "Identifier": {
+            "PURL": "pkg:pypi/idna@3.20",
+            "UID": "39bb418a821b4767"
+          },
+          "Version": "3.20",
+          "Licenses": [
+            "BSD-3-Clause"
+          ],
+          "Locations": [
+            {
+              "StartLine": 11,
+              "EndLine": 11
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "itsdangerous",
+          "Identifier": {
+            "PURL": "pkg:pypi/itsdangerous@2.2.0",
+            "UID": "ded955a21f187142"
+          },
+          "Version": "2.2.0",
+          "Locations": [
+            {
+              "StartLine": 12,
+              "EndLine": 12
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "jiter",
+          "Identifier": {
+            "PURL": "pkg:pypi/jiter@0.19.0",
+            "UID": "8dcdf11c260cc4a4"
+          },
+          "Version": "0.19.0",
+          "Locations": [
+            {
+              "StartLine": 14,
+              "EndLine": 14
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "openai",
+          "Identifier": {
+            "PURL": "pkg:pypi/openai@3.46.0",
+            "UID": "645754c718bd859e"
+          },
+          "Version": "3.46.0",
+          "Locations": [
+            {
+              "StartLine": 16,
+              "EndLine": 16
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "pydantic",
+          "Identifier": {
+            "PURL": "pkg:pypi/pydantic@2.14.3",
+            "UID": "c84373161431b00f"
+          },
+          "Version": "2.14.3",
+          "Licenses": [
+            "MIT"
+          ],
+          "Locations": [
+            {
+              "StartLine": 17,
+              "EndLine": 17
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "pydantic_core",
+          "Identifier": {
+            "PURL": "pkg:pypi/pydantic-core@2.50.4",
+            "UID": "1d7a49fede62d4a1"
+          },
+          "Version": "2.50.4",
+          "Licenses": [
+            "MIT"
+          ],
+          "Locations": [
+            {
+              "StartLine": 18,
+              "EndLine": 18
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "python-dotenv",
+          "Identifier": {
+            "PURL": "pkg:pypi/python-dotenv@1.2.4",
+            "UID": "8838098441a70bd1"
+          },
+          "Version": "1.2.4",
+          "Licenses": [
+            "BSD-3-Clause"
+          ],
+          "Locations": [
+            {
+              "StartLine": 19,
+              "EndLine": 19
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "sniffio",
+          "Identifier": {
+            "PURL": "pkg:pypi/sniffio@1.3.1",
+            "UID": "d8a893d1c0f8013b"
+          },
+          "Version": "1.3.1",
+          "Locations": [
+            {
+              "StartLine": 20,
+              "EndLine": 20
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "truststore",
+          "Identifier": {
+            "PURL": "pkg:pypi/truststore@0.10.5",
+            "UID": "a7caca0c9bda20ac"
+          },
+          "Version": "0.10.5",
+          "Locations": [
+            {
+              "StartLine": 21,
+              "EndLine": 21
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "typing-inspection",
+          "Identifier": {
+            "PURL": "pkg:pypi/typing-inspection@0.4.5",
+            "UID": "8d82bae6ec4fe8da"
+          },
+          "Version": "0.4.5",
+          "Licenses": [
+            "MIT"
+          ],
+          "Locations": [
+            {
+              "StartLine": 22,
+              "EndLine": 22
+            }
+          ],
+          "AnalyzedBy": "pip"
+        },
+        {
+          "Name": "typing_extensions",
+          "Identifier": {
+            "PURL": "pkg:pypi/typing-extensions@4.16.0",
+            "UID": "c9db4405f97add2b"
+          },
+          "Version": "4.16.0",
+          "Licenses": [
+            "PSF-2.0"
+          ],
+          "Locations": [
+            {
+              "StartLine": 23,
+              "EndLine": 23
+            }
+          ],
+          "AnalyzedBy": "pip"
         }
       ],
       "Vulnerabilities": [
         {
-          "VulnerabilityID": "CVE-2023-30861",
+          "VulnerabilityID": "CVE-2026-102598",
           "VendorIDs": [
-            "GHSA-m2qf-hxjv-5gpq"
+            "GHSA-g6x2-hccm-hh4m"
           ],
-          "PkgName": "Flask",
+          "PkgName": "Werkzeug",
           "PkgIdentifier": {
-            "PURL": "pkg:pypi/flask@2.2.2",
-            "UID": "8c8fe4168b42b85a"
+            "PURL": "pkg:pypi/werkzeug@3.1.8",
+            "UID": "6a38d4b06537f4ea"
           },
-          "InstalledVersion": "2.2.2",
-          "FixedVersion": "2.3.2, 2.2.5",
+          "InstalledVersion": "3.1.8",
+          "FixedVersion": "3.1.9",
           "Status": "fixed",
           "SeveritySource": "ghsa",
-          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-30861",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-102598",
           "DataSource": {
             "ID": "ghsa",
             "Name": "GitHub Security Advisory pip",
             "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
           },
-          "Fingerprint": "sha256:01990712a696e3936ad8f958c69fd70a74091fa2230d38ba4e606426c335e0f7",
-          "Title": "flask: Possible disclosure of permanent session cookie due to missing Vary: Cookie header",
-          "Description": "Flask is a lightweight WSGI web application framework. When all of the following conditions are met, a response containing data intended for one client may be cached and subsequently sent by the proxy to other clients. If the proxy also caches `Set-Cookie` headers, it may send one client's `session` cookie to other clients. The severity depends on the application's use of the session and the proxy's behavior regarding cookies. The risk depends on all these conditions being met.\n\n1. The application must be hosted behind a caching proxy that does not strip cookies or ignore responses with cookies.\n2. The application sets `session.permanent = True`\n3. The application does not access or modify the session at any point during a request.\n4. `SESSION_REFRESH_EACH_REQUEST` enabled (the default).\n5. The application does not set a `Cache-Control` header to indicate that a page is private or should not be cached.\n\nThis happens because vulnerable versions of Flask only set the `Vary: Cookie` header when the session is accessed or modified, not when it is refreshed (re-sent to update the expiration) without being accessed or modified. This issue has been fixed in versions 2.3.2 and 2.2.5.",
-          "Severity": "HIGH",
+          "Fingerprint": "sha256:efd912abdde77d1dec39a7b7b6f5488f1cd4d5ac1d0c27faef1821782b879621",
+          "Title": "werkzeug: werkzeug: Denial of Service via safe_join() Windows special device paths",
+          "Description": "Werkzeug is a comprehensive WSGI web application library. Prior to 3.1.9, the safe_join function used by send_from_directory can allow a NUL: special-device path because safe_join checks the Windows device name without first removing an empty NTFS ADS marker. The trigger is that an application runs on Windows with NTFS and serves a user-specified path ending in a special device name such as NUL:. The attack mechanism is that a requested path ends in a Windows special device name with an empty ADS marker. The impact is that the special device opens successfully and the file read hangs indefinitely. This issue is fixed in version 3.1.9.",
+          "Severity": "MEDIUM",
           "CweIDs": [
-            "CWE-539"
+            "CWE-67"
           ],
           "VendorSeverity": {
-            "amazon": 3,
-            "ghsa": 3,
-            "nvd": 3,
-            "oracle-oval": 3,
-            "redhat": 3,
+            "ghsa": 2,
+            "redhat": 2,
             "ubuntu": 2
           },
           "CVSS": {
             "ghsa": {
-              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
-              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N",
-              "V3Score": 7.5,
-              "V40Score": 8.7
-            },
-            "nvd": {
-              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
-              "V3Score": 7.5
+              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N",
+              "V40Score": 6.3
             },
             "redhat": {
-              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
-              "V3Score": 7.5
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+              "V3Score": 5.3
             }
           },
           "References": [
-            "https://access.redhat.com/security/cve/CVE-2023-30861",
-            "https://github.com/pallets/flask",
-            "https://github.com/pallets/flask/commit/70f906c51ce49c485f1d355703e9cc3386b1cc2b",
-            "https://github.com/pallets/flask/commit/8646edca6f47e2cd57464081b3911218d4734f8d%20%282.2.5%29",
-            "https://github.com/pallets/flask/commit/8705dd39c4fa563ea0fe0bf84c85da8fcc98b88d%20%282.3.2%29",
-            "https://github.com/pallets/flask/commit/afd63b16170b7c047f5758eb910c416511e9c965",
-            "https://github.com/pallets/flask/releases/tag/2.2.5",
-            "https://github.com/pallets/flask/releases/tag/2.3.2",
-            "https://github.com/pallets/flask/security/advisories/GHSA-m2qf-hxjv-5gpq",
-            "https://github.com/pypa/advisory-database/tree/main/vulns/flask/PYSEC-2023-62.yaml",
-            "https://linux.oracle.com/cve/CVE-2023-30861.html",
-            "https://linux.oracle.com/errata/ELSA-2023-12710.html",
-            "https://lists.debian.org/debian-lts-announce/2023/08/msg00024.html",
-            "https://nvd.nist.gov/vuln/detail/CVE-2023-30861",
-            "https://security.netapp.com/advisory/ntap-20230818-0006",
-            "https://security.netapp.com/advisory/ntap-20230818-0006/",
-            "https://ubuntu.com/security/notices/USN-6111-1",
-            "https://www.cve.org/CVERecord?id=CVE-2023-30861",
-            "https://www.debian.org/security/2023/dsa-5442"
+            "https://access.redhat.com/security/cve/CVE-2026-102598",
+            "https://github.com/pallets/werkzeug",
+            "https://github.com/pallets/werkzeug/commit/8d77320bcdf3a34941ec06dcf16b03c065cd21b6",
+            "https://github.com/pallets/werkzeug/pull/3309",
+            "https://github.com/pallets/werkzeug/releases/tag/3.1.9",
+            "https://github.com/pallets/werkzeug/security/advisories/GHSA-g6x2-hccm-hh4m",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-102598",
+            "https://www.cve.org/CVERecord?id=CVE-2026-102598"
           ],
-          "PublishedDate": "2023-05-02T18:15:52.373Z",
-          "LastModifiedDate": "2026-06-17T05:55:47.853Z"
+          "PublishedDate": "2026-09-29T16:17:06.01Z",
+          "LastModifiedDate": "2026-09-30T19:38:27.293Z"
         },
         {
-          "VulnerabilityID": "CVE-2026-27205",
+          "VulnerabilityID": "CVE-2026-45833",
           "VendorIDs": [
-            "GHSA-68rp-wp8r-4726"
+            "GHSA-36p7-vc44-83pf"
           ],
-          "PkgName": "Flask",
+          "PkgName": "chromadb",
           "PkgIdentifier": {
-            "PURL": "pkg:pypi/flask@2.2.2",
-            "UID": "8c8fe4168b42b85a"
+            "PURL": "pkg:pypi/chromadb@0.5.23",
+            "UID": "fc4708214e1aad8"
           },
-          "InstalledVersion": "2.2.2",
-          "FixedVersion": "3.1.3",
-          "Status": "fixed",
+          "InstalledVersion": "0.5.23",
+          "Status": "affected",
           "SeveritySource": "ghsa",
-          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-27205",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-45833",
           "DataSource": {
             "ID": "ghsa",
             "Name": "GitHub Security Advisory pip",
             "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
           },
-          "Fingerprint": "sha256:839b018d29feb00ed3606e384c5ccf1947574dbbd4125dd3f18bae4319e116e9",
-          "Title": "flask: Flask: Information disclosure via improper caching of session data",
-          "Description": "Flask is a web server gateway interface (WSGI) web application framework. In versions 3.1.2 and below, when the session object is accessed, Flask should set the Vary: Cookie header., resulting in a Use of Cache Containing Sensitive Information vulnerability. The logic instructs caches not to cache the response, as it may contain information specific to a logged in user. This is handled in most cases, but some forms of access such as the Python in operator were overlooked. The severity and risk depend on the application being hosted behind a caching proxy that doesn't ignore responses with cookies, not setting a Cache-Control header to mark pages as private or non-cacheable, and accessing the session in a way that only touches keys without reading values or mutating the session. The issue has been fixed in version 3.1.3.",
-          "Severity": "LOW",
+          "Fingerprint": "sha256:5c2237934fd5039dff4267bde1ae1f2504b068e995f57921d2db788a71699b08",
+          "Title": "chromadb: ChromaDB: Arbitrary Code Execution via Code Injection",
+          "Description": "A code injection vulnerability in version 0.4.17 or later of the ChromaDB Python project allows an authenticated attacker to run arbitrary code on the server by sending a malicious model repository and trust_remote_code set to true in the /api/v2/tenants/default_tenant/databases/default_database/collections/{collection_id} if they have the UPDATE_COLLECTION permission.",
+          "Severity": "CRITICAL",
           "CweIDs": [
-            "CWE-524"
+            "CWE-94"
           ],
           "VendorSeverity": {
-            "amazon": 2,
-            "ghsa": 1,
-            "nvd": 2,
-            "redhat": 2,
-            "ubuntu": 1
+            "ghsa": 4,
+            "nvd": 3,
+            "redhat": 3
           },
           "CVSS": {
             "ghsa": {
-              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:P/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N",
-              "V40Score": 2.3
+              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:H/SC:H/SI:H/SA:H",
+              "V40Score": 9.4
             },
             "nvd": {
-              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:N/A:N",
-              "V3Score": 4.3
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 8.8
             },
             "redhat": {
-              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:N/A:N",
-              "V3Score": 4.3
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 7.5
             }
           },
           "References": [
-            "https://access.redhat.com/security/cve/CVE-2026-27205",
-            "https://github.com/pallets/flask",
-            "https://github.com/pallets/flask/commit/089cb86dd22bff589a4eafb7ab8e42dc357623b4",
-            "https://github.com/pallets/flask/releases/tag/3.1.3",
-            "https://github.com/pallets/flask/security/advisories/GHSA-68rp-wp8r-4726",
-            "https://nvd.nist.gov/vuln/detail/CVE-2026-27205",
-            "https://ubuntu.com/security/notices/USN-8104-1",
-            "https://www.cve.org/CVERecord?id=CVE-2026-27205"
+            "https://access.redhat.com/security/cve/CVE-2026-45833",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2488430",
+            "https://github.com/chroma-core/chroma",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-45833",
+            "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-45833.json",
+            "https://www.cve.org/CVERecord?id=CVE-2026-45833",
+            "https://www.hiddenlayer.com/sai-security-advisory/2026-06-chromadb-5"
           ],
-          "PublishedDate": "2026-02-21T06:17:00.91Z",
-          "LastModifiedDate": "2026-06-17T10:26:50.7Z"
+          "PublishedDate": "2026-06-12T16:16:29.07Z",
+          "LastModifiedDate": "2026-10-26T11:10:00.157Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-45830",
+          "VendorIDs": [
+            "GHSA-2wm9-hf6c-p5cr"
+          ],
+          "PkgName": "chromadb",
+          "PkgIdentifier": {
+            "PURL": "pkg:pypi/chromadb@0.5.23",
+            "UID": "fc4708214e1aad8"
+          },
+          "InstalledVersion": "0.5.23",
+          "Status": "affected",
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-45830",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory pip",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
+          },
+          "Fingerprint": "sha256:947e70ce7fa85344d188ea0f889673c702a4c528b139d84a76e870876f8126fb",
+          "Title": "chromadb: ChromaDB: Unauthorized data manipulation due to improper authorization validation",
+          "Description": "A lack of authorization validation in version 0.4.17 or later of the ChromaDB Python project allows any authenticated users to arbitrarily read, write, update, or delete data in any tenant's collection regardless of which tenant they belong to.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-639",
+            "CWE-266"
+          ],
+          "VendorSeverity": {
+            "ghsa": 3,
+            "nvd": 3,
+            "redhat": 3
+          },
+          "CVSS": {
+            "ghsa": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:P/PR:L/UI:N/VC:H/VI:H/VA:N/SC:H/SI:H/SA:N",
+              "V3Score": 8.8,
+              "V40Score": 8.8
+            },
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 8.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N",
+              "V3Score": 8.1
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2026-45830",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2488408",
+            "https://github.com/chroma-core/chroma",
+            "https://github.com/chroma-core/chroma/issues/7588",
+            "https://github.com/chroma-core/chroma/pull/7602",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-45830",
+            "https://security.access.redhat.com/data/csaf/v2/vex/2026/cve-2026-45830.json",
+            "https://www.cve.org/CVERecord?id=CVE-2026-45830",
+            "https://www.hiddenlayer.com/sai-security-advisory/2026-06-chromadb"
+          ],
+          "PublishedDate": "2026-06-12T16:16:28.66Z",
+          "LastModifiedDate": "2026-10-26T11:10:00.157Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-45831",
+          "VendorIDs": [
+            "GHSA-xph7-9rjv-w5fr"
+          ],
+          "PkgName": "chromadb",
+          "PkgIdentifier": {
+            "PURL": "pkg:pypi/chromadb@0.5.23",
+            "UID": "fc4708214e1aad8"
+          },
+          "InstalledVersion": "0.5.23",
+          "Status": "affected",
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-45831",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory pip",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
+          },
+          "Fingerprint": "sha256:78bbcb04ef346149afc0cefc2acbe04d2132f682a031663cea516c15a994bab4",
+          "Title": "ChromaDB: ChromaDB: Unauthorized cross-tenant actions due to improper authorization checks",
+          "Description": "The SimpleRBACAuthorizationProvider authorization provider in versions 0.5.0 or later of the ChromaDB Python project evaluates whether a user holds a given permission but never checks which tenant, database, or collection that permission applies to allowing users to perform cross tenant actions.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-863"
+          ],
+          "VendorSeverity": {
+            "ghsa": 3,
+            "nvd": 3,
+            "redhat": 2
+          },
+          "CVSS": {
+            "ghsa": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:P/PR:L/UI:N/VC:H/VI:H/VA:N/SC:H/SI:H/SA:N",
+              "V3Score": 8.8,
+              "V40Score": 8.8
+            },
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 8.8
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:N",
+              "V3Score": 6.8
+            }
+          },
+          "References": [
+            "https://access.redhat.com/security/cve/CVE-2026-45831",
+            "https://github.com/chroma-core/chroma",
+            "https://github.com/chroma-core/chroma/issues/7588",
+            "https://github.com/chroma-core/chroma/pull/7602",
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-45831",
+            "https://www.cve.org/CVERecord?id=CVE-2026-45831",
+            "https://www.hiddenlayer.com/sai-security-advisory/2026-06-chromadb-3"
+          ],
+          "PublishedDate": "2026-06-12T16:16:28.797Z",
+          "LastModifiedDate": "2026-10-26T11:10:00.157Z"
         }
       ]
+    },
+    {
+      "Target": "ecommerce/package-lock.json",
+      "Class": "lang-pkgs",
+      "Type": "npm",
+      "Packages": [
+        {
+          "ID": "@types/react@19.3.0",
+          "Name": "@types/react",
+          "Identifier": {
+            "PURL": "pkg:npm/%40types/react@19.3.0",
+            "UID": "2d6e96736d4f6fc9"
+          },
+          "Version": "19.3.0",
+          "Licenses": [
+            "MIT"
+          ],
+          "Relationship": "direct",
+          "DependsOn": [
+            "csstype@3.2.3"
+          ],
+          "Locations": [
+            {
+              "StartLine": 618,
+              "EndLine": 628
+            }
+          ],
+          "AnalyzedBy": "npm"
+        },
+        {
+          "ID": "lucide-react@1.65.0",
+          "Name": "lucide-react",
+          "Identifier": {
+            "PURL": "pkg:npm/lucide-react@1.65.0",
+            "UID": "ef48b380fb6058ad"
+          },
+          "Version": "1.65.0",
+          "Licenses": [
+            "ISC"
+          ],
+          "Relationship": "direct",
+          "DependsOn": [
+            "@types/react@19.3.0",
+            "react@19.3.1"
+          ],
+          "Locations": [
+            {
+              "StartLine": 980,
+              "EndLine": 994
+            }
+          ],
+          "AnalyzedBy": "npm"
+        },
+        {
+          "ID": "react@19.3.1",
+          "Name": "react",
+          "Identifier": {
+            "PURL": "pkg:npm/react@19.3.1",
+            "UID": "797e63d9bcbf0ba8"
+          },
+          "Version": "19.3.1",
+          "Licenses": [
+            "MIT"
+          ],
+          "Relationship": "direct",
+          "Locations": [
+            {
+              "StartLine": 1113,
+              "EndLine": 1122
+            }
+          ],
+          "AnalyzedBy": "npm"
+        },
+        {
+          "ID": "react-dom@19.3.1",
+          "Name": "react-dom",
+          "Identifier": {
+            "PURL": "pkg:npm/react-dom@19.3.1",
+            "UID": "472e0d30574a285"
+          },
+          "Version": "19.3.1",
+          "Licenses": [
+            "MIT"
+          ],
+          "Relationship": "direct",
+          "DependsOn": [
+            "react@19.3.1",
+            "scheduler@0.28.0"
+          ],
+          "Locations": [
+            {
+              "StartLine": 1123,
+              "EndLine": 1134
+            }
+          ],
+          "AnalyzedBy": "npm"
+        },
+        {
+          "ID": "csstype@3.2.3",
+          "Name": "csstype",
+          "Identifier": {
+            "PURL": "pkg:npm/csstype@3.2.3",
+            "UID": "b7355e1255bd84ce"
+          },
+          "Version": "3.2.3",
+          "Licenses": [
+            "MIT"
+          ],
+          "Indirect": true,
+          "Relationship": "indirect",
+          "Locations": [
+            {
+              "StartLine": 669,
+              "EndLine": 675
+            }
+          ],
+          "AnalyzedBy": "npm"
+        },
+        {
+          "ID": "scheduler@0.28.0",
+          "Name": "scheduler",
+          "Identifier": {
+            "PURL": "pkg:npm/scheduler@0.28.0",
+            "UID": "816901a8ff417239"
+          },
+          "Version": "0.28.0",
+          "Licenses": [
+            "MIT"
+          ],
+          "Indirect": true,
+          "Relationship": "indirect",
+          "Locations": [
+            {
+              "StartLine": 1169,
+              "EndLine": 1174
+            }
+          ],
+          "AnalyzedBy": "npm"
+        }
+      ]
+    },
+    {
+      "Target": "k8s/deployment.yaml",
+      "Class": "config",
+      "Type": "kubernetes",
+      "MisconfSummary": {
+        "Successes": 98,
+        "Failures": 1
+      },
+      "Misconfigurations": [
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0021",
+          "Title": "Runs with GID \u003c= 10000",
+          "Description": "Force the container to run with group ID \u003e 10000 to avoid conflicts with the host’s user table.",
+          "Message": "Container 'secure-app' of Deployment 'secure-app' should set 'securityContext.runAsGroup' \u003e 10000",
+          "Namespace": "builtin.kubernetes.KSV021",
+          "Query": "data.builtin.kubernetes.KSV021.deny",
+          "Resolution": "Set 'containers[].securityContext.runAsGroup' to an integer \u003e 10000.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0021",
+          "References": [
+            "https://kubesec.io/basics/containers-securitycontext-runasuser/",
+            "https://avd.aquasec.com/misconfig/ksv-0021"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 30,
+            "EndLine": 65,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 30,
+                  "Content": "        - name: secure-app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: secure-app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 31,
+                  "Content": "          image: secure-app:v1.0.0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: secure-app:v1.0.0",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 32,
+                  "Content": "          imagePullPolicy: Always",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimagePullPolicy\u001b[0m: Always",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 33,
+                  "Content": "",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 34,
+                  "Content": "          ports:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mports\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 35,
+                  "Content": "            - containerPort: 5000",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            - \u001b[38;5;33mcontainerPort\u001b[0m: \u001b[38;5;37m5000",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 36,
+                  "Content": "",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 37,
+                  "Content": "          resources:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mresources\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 38,
+                  "Content": "            requests:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mrequests\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": true
+                },
+                {
+                  "Number": 39,
+                  "Content": "",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": true,
+                  "FirstCause": false,
+                  "LastCause": false
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Target": "k8s/namespace.yaml",
+      "Class": "config",
+      "Type": "kubernetes",
+      "MisconfSummary": {
+        "Successes": 99,
+        "Failures": 0
+      }
+    },
+    {
+      "Target": "k8s/network-policy.yaml",
+      "Class": "config",
+      "Type": "kubernetes",
+      "MisconfSummary": {
+        "Successes": 99,
+        "Failures": 0
+      }
+    },
+    {
+      "Target": "k8s/service.yaml",
+      "Class": "config",
+      "Type": "kubernetes",
+      "MisconfSummary": {
+        "Successes": 99,
+        "Failures": 0
+      }
     }
   ]
 }

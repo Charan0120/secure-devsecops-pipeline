@@ -1,0 +1,7 @@
+{
+    "semgrep": "COMPLETED",
+    "trivy": "COMPLETED",
+    "checkov": "COMPLETED",
+    "chatbot": "COMPLETED",
+    "garak": "COMPLETED"
+}

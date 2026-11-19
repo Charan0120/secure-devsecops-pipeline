@@ -13,3 +13,13 @@ dist/
 .DS_Store
 app/products.db
 app/chroma_db/
+# SecureGate local environment and database
+securegate/.env
+securegate/backend/securegate.db
+securegate/backend/__pycache__/
+securegate/frontend/node_modules/
+securegate/frontend/dist/
+securegate/.build-venv/
+securegate/build/
+securegate/dist/
+securegate/

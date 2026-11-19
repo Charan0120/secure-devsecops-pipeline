@@ -409,6 +409,17 @@ jobs:
           find . -name "chatbot-agent-security.json" -type f
 
           exit $SCANNER_EXIT
+
+      # 16b. Run Garak Open-Source LLM Vulnerability Scanner
+      - name: Garak LLM Vulnerability Assessment
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "Starting Garak Open-Source LLM Vulnerability Scanner"
+          .venv-chatbot/bin/python security/run_garak.py
+          echo "===== Garak report generated ====="
+          ls -lh reports/garak-results.json || true
+
       # 17. Stop chatbot service
       - name: Stop Chatbot Service
         if: always()
@@ -453,7 +464,8 @@ jobs:
               "semgrep": "reports/semgrep-results.json",
               "trivy": "reports/trivy-results.json",
               "checkov": "reports/checkov-results.sarif",
-              "chatbot": "reports/chatbot-agent-security.json"
+              "chatbot": "reports/chatbot-agent-security.json",
+              "garak": "reports/garak-results.json"
           }
 
           status = {

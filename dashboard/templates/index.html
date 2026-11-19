@@ -464,6 +464,13 @@
             <a href="https://github.com/Charan0120/secure-devsecops-pipeline" target="_blank" class="btn">
                 🐙 GitHub Repository
             </a>
+            <!-- Hidden file input for ZIP upload -->
+            <input type="file" id="report-zip-input" accept=".zip" style="display:none"
+                   onchange="uploadReportZip(this)">
+            <button onclick="document.getElementById('report-zip-input').click()" class="btn"
+                    id="upload-btn" title="Upload a security-reports.zip downloaded from GitHub Actions">
+                📤 Upload Reports ZIP
+            </button>
             <button onclick="location.reload()" class="btn">
                 🔄 Refresh Audit
             </button>
@@ -538,7 +545,7 @@
             <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Executed via GitHub Actions</span>
         </div>
         <div class="pipeline-stages">
-            {% for scanner_name in ['Semgrep', 'Trivy', 'Checkov', 'Chatbot'] %}
+            {% for scanner_name in ['Semgrep', 'Trivy', 'Checkov', 'Chatbot', 'Garak'] %}
             {% set scanner_state = scanner_status.get(scanner_name, 'MISSING') %}
             <div class="stage-box">
                 <div class="stage-title">{{ scanner_name }}</div>
@@ -694,7 +701,169 @@
 
 </div>
 
+
+    <!-- Live Chatbot Security Monitoring -->
+    <section class="finding-card" id="live-monitoring-panel" style="margin-top:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div>
+                <h3 class="finding-title">Live Chatbot Security Events</h3>
+                <p style="color:var(--text-muted); font-size:12px; margin-top:5px;">
+                    Recent allowed and blocked chatbot requests. Prompt and response contents are not stored here.
+                </p>
+            </div>
+            <span id="monitoring-updated" class="badge">Waiting for events...</span>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin:16px 0;">
+            <div class="stat-card" style="min-width:120px; flex:1; padding:12px;">
+                <div class="stat-label">Total events</div><div class="stat-value" id="event-total">0</div>
+            </div>
+            <div class="stat-card" style="min-width:120px; flex:1; padding:12px;">
+                <div class="stat-label">Blocked</div><div class="stat-value" id="event-blocked" style="color:#f87171;">0</div>
+            </div>
+            <div class="stat-card" style="min-width:120px; flex:1; padding:12px;">
+                <div class="stat-label">Allowed</div><div class="stat-value" id="event-allowed" style="color:#34d399;">0</div>
+            </div>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="chatbot-table" style="width:100%;">
+                <thead><tr>
+                    <th>Time</th><th>Source</th><th>Category</th><th>Severity</th><th>Outcome</th><th>Details</th>
+                </tr></thead>
+                <tbody id="live-events-body">
+                    <tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Loading live security events...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
 <script>
+    function escapeMonitoringText(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[ch]));
+    }
+
+    async function refreshLiveMonitoring() {
+        const body = document.getElementById('live-events-body');
+        if (!body) return;
+        try {
+            const response = await fetch('/api/monitoring/events?limit=100', { cache: 'no-store' });
+            const data = await response.json();
+            if (!data.ok) throw new Error(data.message || 'Monitoring endpoint error');
+
+            const counts = data.counts || {};
+            document.getElementById('event-total').textContent = counts.total || 0;
+            document.getElementById('event-blocked').textContent = counts.blocked || 0;
+            document.getElementById('event-allowed').textContent = counts.allowed || 0;
+
+            if (!data.available) {
+                body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">
+                    Live event logging is not active yet. Install the monitoring helper and updated chatbot backend.
+                </td></tr>`;
+            } else if (!data.events || data.events.length === 0) {
+                body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">
+                    No live chatbot events recorded yet. Use the chatbot to generate events.
+                </td></tr>`;
+            } else {
+                body.innerHTML = data.events.map(event => {
+                    const time = event.created_at ? new Date(event.created_at).toLocaleString() : '—';
+                    return `<tr>
+                        <td>${escapeMonitoringText(time)}</td>
+                        <td>${escapeMonitoringText(event.source)}</td>
+                        <td>${escapeMonitoringText(event.category)}</td>
+                        <td>${escapeMonitoringText(event.severity)}</td>
+                        <td>${escapeMonitoringText(event.outcome)}</td>
+                        <td>${escapeMonitoringText(event.details || '')}</td>
+                    </tr>`;
+                }).join('');
+            }
+            document.getElementById('monitoring-updated').textContent =
+                'Updated ' + new Date().toLocaleTimeString();
+        } catch (error) {
+            document.getElementById('monitoring-updated').textContent = 'Update failed';
+            body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#f87171;">
+                Unable to load live events: ${escapeMonitoringText(error.message)}
+            </td></tr>`;
+        }
+    }
+
+    // Live chatbot events update frequently without reloading the dashboard.
+    refreshLiveMonitoring();
+    setInterval(refreshLiveMonitoring, 5000);
+
+    // ── Auto-refresh: poll /api/reports-status every 5 s ──────────────────
+    // When the file-watcher backend detects new report files it sets dirty=true.
+    // The browser then reloads the full page once to show the new results.
+    let _lastDirty = false;
+    async function pollReportStatus() {
+        try {
+            const res = await fetch('/api/reports-status');
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.dirty && !_lastDirty) {
+                console.log('[dashboard] Report files changed — reloading…');
+                window.location.reload();
+            }
+            _lastDirty = data.dirty;
+        } catch (_) {}
+    }
+    setInterval(pollReportStatus, 5000);
+
+    // ── Upload a security-reports ZIP directly to the dashboard ───────────
+    async function uploadReportZip(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const btn = document.getElementById('upload-btn');
+        btn.textContent = '⏳ Uploading…';
+        btn.disabled = true;
+
+        const form = new FormData();
+        form.append('file', file);
+
+        try {
+            const res = await fetch('/api/upload-reports', { method: 'POST', body: form });
+            const data = await res.json();
+
+            if (data.ok) {
+                showToast(
+                    '✅ Reports updated — ' + data.extracted.join(', '),
+                    '#10b981'
+                );
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                showToast('❌ Upload failed: ' + (data.error || 'unknown error'), '#ef4444');
+            }
+        } catch (err) {
+            showToast('❌ Network error: ' + err.message, '#ef4444');
+        } finally {
+            btn.textContent = '📤 Upload Reports ZIP';
+            btn.disabled = false;
+            input.value = '';   // allow re-upload of same file
+        }
+    }
+
+    function showToast(message, color) {
+        let toast = document.getElementById('upload-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'upload-toast';
+            toast.style.cssText = [
+                'position:fixed', 'bottom:28px', 'right:28px', 'z-index:9999',
+                'padding:14px 22px', 'border-radius:10px', 'font-weight:600',
+                'font-size:14px', 'color:#fff', 'box-shadow:0 4px 20px rgba(0,0,0,0.5)',
+                'transition:opacity 0.4s', 'max-width:420px'
+            ].join(';');
+            document.body.appendChild(toast);
+        }
+        toast.style.background = color;
+        toast.style.opacity = '1';
+        toast.textContent = message;
+        clearTimeout(toast._hideTimer);
+        toast._hideTimer = setTimeout(() => { toast.style.opacity = '0'; }, 4000);
+    }
+
+
     function filterFindings(scanner, button) {
         // Toggle tab active style
         const buttons = document.querySelectorAll('.tab-btn');

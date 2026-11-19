@@ -78,7 +78,10 @@ def get_products():
     connection.row_factory = sqlite3.Row
 
     products = connection.execute(
-        "SELECT * FROM products"
+        """
+        SELECT id, name, category, price, stock, description, features, brand
+        FROM products
+        """
     ).fetchall()
 
     connection.close()
@@ -145,7 +148,8 @@ def retrieve_products(question, limit=3):
 
     products = connection.execute(
         f"""
-        SELECT * FROM products
+        SELECT id, name, category, price, stock, description, features, brand
+        FROM products
         WHERE id IN ({placeholders})
         """,
         [int(product_id) for product_id in ids]
