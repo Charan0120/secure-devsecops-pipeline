@@ -5,7 +5,7 @@ from google import genai
 
 # Load the same API key and model used by Flask
 load_dotenv("app/.env")
-
+print('hel')
 api_key = os.getenv("GEMINI_API_KEY")
 model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 
